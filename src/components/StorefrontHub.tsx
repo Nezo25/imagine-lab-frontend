@@ -75,7 +75,7 @@ export function StorefrontHub({
     },
     {
       id: 'POKEMON_TCG',
-      label: 'Pokémon & Selados',
+      label: 'Pokémon',
       icon: '⚡',
       description: UNIVERSE_CONFIG.POKEMON_TCG.description,
     },

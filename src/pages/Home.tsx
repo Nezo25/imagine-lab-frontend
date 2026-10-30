@@ -289,7 +289,7 @@ export default function Home() {
                   { id: 'DIORAMA', label: 'Dioramas' },
                   { id: 'CHIBI', label: 'Colecionáveis' },
                   { id: 'ACCESSORY_3D', label: 'Geek 3D' },
-                  { id: 'TCG', label: 'TCG & Selados' },
+                  { id: 'TCG', label: 'Pokémon TCG' },
                 ].map(tab => {
                   const active = activeCategory === tab.id;
                   return (
@@ -436,7 +436,7 @@ export default function Home() {
                 <span className="font-mono text-xs text-[#7C3AED] font-bold pt-0.5">03</span>
                 <div>
                   <h4 className="font-display text-xl text-white uppercase tracking-wide">Envio Protegido para Todo o Brasil</h4>
-                  <p className="text-xs text-[#94A3B8] mt-0.5">Embalagem multicamada antichoque direta de Pinhalzinho-SP com rastreio total.</p>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">Embalagem multicamada antichoque direta de Monte Alegre-SP com rastreio total.</p>
                 </div>
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function Home() {
                 ImagineLab<span className="text-[#38BDF8]">.3D</span>
               </span>
               <span className="text-[10px] text-[#94A3B8] font-mono">
-                Pinhalzinho - SP • @imaginelab.3d
+                Monte Alegre - SP • @imaginelab.3d
               </span>
             </div>
           </div>
@@ -529,7 +529,7 @@ export default function Home() {
             </a>
           </div>
           <div>
-            © 2026 IMAGINELAB • PINHALZINHO-SP • TODOS OS DIREITOS RESERVADOS
+            © 2026 IMAGINELAB • MONTE ALEGRE-SP • TODOS OS DIREITOS RESERVADOS
           </div>
         </div>
       </footer>

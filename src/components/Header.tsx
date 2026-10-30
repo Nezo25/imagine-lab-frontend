@@ -41,7 +41,7 @@ export function Header({ cart, onCartOpen, onOrcamento, onOpenWorkshopModal, sea
               </span>
             </div>
             <span className="text-[9px] font-bold tracking-widest text-[#94A3B8] uppercase -mt-0.5">
-              PINHALZINHO-SP
+              MONTE ALEGRE-SP
             </span>
           </div>
         </Link>

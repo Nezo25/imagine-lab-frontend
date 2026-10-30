@@ -27,7 +27,7 @@ export function ContactForgeBanner({
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500" />
           </span>
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#38BDF8]">
-            Atendimento Ativo • Pinhalzinho-SP
+            Atendimento Ativo • Monte Alegre-SP
           </span>
         </div>
 

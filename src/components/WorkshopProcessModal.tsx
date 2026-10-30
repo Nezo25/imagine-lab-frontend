@@ -102,7 +102,7 @@ export function WorkshopProcessModal({
                 Como sua peça ganha vida na ImagineLab
               </h2>
               <p className="text-xs md:text-sm text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
-                Da modelagem digital ao acabamento artesanal: conheça cada etapa do nosso processo cuidadoso em Pinhalzinho-SP.
+                Da modelagem digital ao acabamento artesanal: conheça cada etapa do nosso processo cuidadoso em Monte Alegre-SP.
               </p>
             </div>
 

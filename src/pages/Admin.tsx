@@ -1373,7 +1373,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                   onClick={() => setCatalogTab('tcg')}
                   className={`pb-2 px-1 text-sm font-bold border-b-2 transition-colors ${catalogTab === 'tcg' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
                 >
-                  TCG & Selados
+                  Pokémon TCG
                 </button>
               </div>
 

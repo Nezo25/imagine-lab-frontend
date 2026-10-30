@@ -68,7 +68,7 @@ export function CatalogFilters({
             {[
               { id: 'ALL', label: '🔥 Todas as Criações' },
               { id: 'PRINT_3D', label: '🖨️ Oficina 3D' },
-              { id: 'TCG', label: '🃏 TCG & Selados' },
+              { id: 'TCG', label: '🃏 Pokémon' },
             ].map(tab => (
               <button
                 key={tab.id}

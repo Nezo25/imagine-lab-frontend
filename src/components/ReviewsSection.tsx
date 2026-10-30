@@ -50,7 +50,7 @@ export function ReviewsSection({ onOpenSubmitReview }: Props) {
               O que dizem os clientes
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-xl leading-relaxed">
-              Depoimentos reais de quem já transformou sua ideia em realidade 3D com a ImagineLab em Pinhalzinho-SP.
+              Depoimentos reais de quem já transformou sua ideia em realidade 3D com a ImagineLab em Monte Alegre-SP.
             </p>
           </div>
 

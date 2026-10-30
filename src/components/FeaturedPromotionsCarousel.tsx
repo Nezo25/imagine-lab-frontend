@@ -323,7 +323,7 @@ export function FeaturedPromotionsCarousel({
         <div className="absolute -bottom-3 -right-3 md:bottom-6 md:-right-6 z-30 w-24 h-24 rounded-full bg-[#1E2433] text-white p-2 flex flex-col items-center justify-center text-center shadow-2xl border-2 border-purple-500/50 transform rotate-12 group-hover:rotate-0 transition-transform pointer-events-none">
           <span className="text-base leading-none mb-0.5 text-[#38BDF8]">✦</span>
           <span className="font-display text-xs font-bold leading-tight uppercase text-white">IMAGINELAB</span>
-          <span className="text-[8px] font-bold text-slate-400 leading-none">PINHALZINHO</span>
+          <span className="text-[8px] font-bold text-slate-400 leading-none">MONTE ALEGRE</span>
         </div>
       )}
     </div>

@@ -25,7 +25,7 @@ export function Hero({ onOrcamento, featuredProduct, products = [], onConfigure,
           <div className="flex items-center gap-3 mb-6">
             <span className="w-8 h-[2px] bg-gradient-to-r from-[#7C3AED] to-[#38BDF8]" />
             <span className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#38BDF8] uppercase">
-              IMPRESSÃO 3D PERSONALIZADA • PINHALZINHO-SP
+              IMPRESSÃO 3D PERSONALIZADA • MONTE ALEGRE-SP
             </span>
           </div>
 
@@ -151,7 +151,7 @@ export function Hero({ onOrcamento, featuredProduct, products = [], onConfigure,
 
           {/* Right vertical text */}
           <div className="hidden xl:flex absolute -right-10 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[10px] tracking-[0.3em] font-semibold text-[#475569] uppercase pointer-events-none">
-            IMAGINELAB • 3D STUDIO • PINHALZINHO-SP
+            IMAGINELAB • 3D STUDIO • MONTE ALEGRE-SP
           </div>
         </div>
 

@@ -117,7 +117,7 @@ export function ProductCustomizeModal({ product, onClose, onAdd }: Props) {
             <span className="text-base leading-none text-[#7C3AED] shrink-0 mt-0.5">🔮</span>
             <p>
               {isTcgItem 
-                ? 'Produto autêntico e lacrado. Envio rápido direto de Pinhalzinho-SP com rastreio.'
+                ? 'Produto autêntico e lacrado. Envio rápido direto de Monte Alegre-SP com rastreio.'
                 : 'As peças da ImagineLab são impressas e finalizadas artesanalmente com rigoroso controle de qualidade.'}
             </p>
           </div>

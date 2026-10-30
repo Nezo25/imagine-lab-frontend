@@ -64,7 +64,7 @@ export default function AdminLogin() {
           </div>
           <div className="text-center">
             <h1 className="text-xl font-extrabold text-white">ImagineLab 3D</h1>
-            <p className="text-xs mt-1 text-[#94A3B8]">Painel Administrativo • Pinhalzinho-SP</p>
+            <p className="text-xs mt-1 text-[#94A3B8]">Painel Administrativo • Monte Alegre-SP</p>
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export default function AdminLogin() {
         </div>
 
         <p className="text-center text-xs mt-6 text-[#64748B]">
-          ImagineLab © {new Date().getFullYear()} • Pinhalzinho-SP
+          ImagineLab © {new Date().getFullYear()} • Monte Alegre-SP
         </p>
       </div>
     </div>

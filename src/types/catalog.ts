@@ -18,11 +18,11 @@ export interface UniverseInfo {
 export const UNIVERSE_CONFIG: Record<ProductUniverse, UniverseInfo> = {
   POKEMON_TCG: {
     id: 'POKEMON_TCG',
-    label: 'Pokémon & Selados',
+    label: 'Pokémon',
     icon: '⚡',
     badge: '⚡ POKÉMON',
     shortBadge: '⚡ Pokémon',
-    description: 'Figures exclusivas, miniaturas e cartas colecionáveis seladas'
+    description: 'Figures exclusivas, colecionáveis e miniaturas de Pokémon'
   },
   ANIME_MANGA: {
     id: 'ANIME_MANGA',

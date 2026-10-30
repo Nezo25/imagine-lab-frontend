@@ -102,7 +102,7 @@ export function OrcamentoModal({ open, onClose, whatsappNumber = '5511999999999'
                   <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping" />
                   <h2 className="font-extrabold text-lg text-white">Orçamento de Impressão 3D</h2>
                 </div>
-                <p className="text-xs text-[#94A3B8] mt-0.5">ImagineLab • Pinhalzinho-SP</p>
+                <p className="text-xs text-[#94A3B8] mt-0.5">ImagineLab • Monte Alegre-SP</p>
               </div>
               <button 
                 type="button" 
