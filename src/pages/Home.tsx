@@ -1,104 +1,150 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductCustomizeModal } from '@/components/ProductCustomizeModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { OrcamentoModal } from '@/components/OrcamentoModal';
-import { FilterDrawer, type FilterState } from '@/components/FilterDrawer';
-import { HowItWorks } from '@/components/HowItWorks';
-import { BrandTrust } from '@/components/BrandTrust';
-import { ALL_CATEGORIES, type CartItem, type Category, type Product } from '@/data/products';
-import { getStoredProducts, fetchRemoteProducts } from '@/services/storage';
+import { WorkshopProcessModal } from '@/components/WorkshopProcessModal';
+import { WorkshopVideoPlayer } from '@/components/WorkshopVideoPlayer';
+import { ReviewsSection } from '@/components/ReviewsSection';
+import { SubmitReviewModal } from '@/components/SubmitReviewModal';
+import { StorefrontHub, type StorefrontTab } from '@/components/StorefrontHub';
+import { CustomSTLBanner } from '@/components/CustomSTLBanner';
+import { CampaignShowcase } from '@/components/CampaignShowcase';
+import { fetchActiveCampaign, type SeasonalCampaign } from '@/services/campaigns';
+import { type CartItem, type Product, CATEGORY_LABELS, toProductCategory, toProductUniverse } from '@/data/products';
+import { getStoredProducts, fetchRemoteProducts, getFeaturedProductId } from '@/services/storage';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(getStoredProducts());
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Load products (local + remote)
+  // Busca assíncrona com fallback resiliente
+  const loadCatalog = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetchRemoteProducts();
+      if (res && res.length > 0) {
+        setProducts(res);
+      } else {
+        const stored = getStoredProducts();
+        setProducts(stored);
+        if (stored.length === 0) {
+          setLoadError('O catálogo está sendo atualizado.');
+        }
+      }
+    } catch (err: any) {
+      console.warn('Falha na sincronização do catálogo:', err);
+      const stored = getStoredProducts();
+      setProducts(stored);
+      if (stored.length === 0) {
+        setLoadError('O catálogo está sendo atualizado.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
-    fetchRemoteProducts()
-      .then((res) => {
-        if (mounted && res && res.length > 0) setProducts(res);
-      })
-      .catch(() => {
-        if (mounted) setProducts(getStoredProducts());
-      });
-
+    loadCatalog();
     const handleUpdate = () => {
       if (mounted) setProducts(getStoredProducts());
     };
-    window.addEventListener('imaginelab_products_updated', handleUpdate);
+    window.addEventListener('forja_products_updated', handleUpdate);
     return () => {
       mounted = false;
-      window.removeEventListener('imaginelab_products_updated', handleUpdate);
+      window.removeEventListener('forja_products_updated', handleUpdate);
     };
-  }, []);
+  }, [loadCatalog]);
 
-  // Filter States
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
+  const [activeUniverse, setActiveUniverse] = useState<StorefrontTab>('ALL');
+  const [activeCampaign, setActiveCampaign] = useState<SeasonalCampaign | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('ALL');
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<FilterState>({ categories: [], materials: [], scales: [] });
-  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-
-  // Modals & Drawers
   const [configProduct, setConfigProduct] = useState<Product | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [orcamentoOpen, setOrcamentoOpen] = useState(false);
+  const [workshopModalOpen, setWorkshopModalOpen] = useState(false);
+  const [submitReviewOpen, setSubmitReviewOpen] = useState(false);
 
-  // Filter Logic
-  const activeProducts = useMemo(() => {
-    return products.filter((p) => {
+  useEffect(() => {
+    fetchActiveCampaign()
+      .then(campaign => {
+        if (campaign && campaign.isActive) {
+          setActiveCampaign(campaign);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
       if (!p.active) return false;
-
-      // Category tab
-      if (selectedCategory !== 'ALL' && p.category !== selectedCategory) {
-        return false;
-      }
-
-      // Search query
-      if (search.trim()) {
+      if (search) {
         const q = search.toLowerCase();
-        const matchName = p.name.toLowerCase().includes(q);
-        const matchCat = p.category.toLowerCase().includes(q);
-        const matchTag = p.tags.some((t) => t.toLowerCase().includes(q));
-        if (!matchName && !matchCat && !matchTag) return false;
+        const pCatLabel = (CATEGORY_LABELS as Record<string, string>)[p.category] || p.category;
+        const matches = 
+          p.name.toLowerCase().includes(q) || 
+          p.category.toLowerCase().includes(q) || 
+          pCatLabel.toLowerCase().includes(q) ||
+          p.types.some(t => t.toLowerCase().includes(q));
+        if (!matches) return false;
       }
 
-      // Advanced filters from drawer
-      if (filters.categories.length > 0 && !filters.categories.includes(p.category)) {
-        return false;
-      }
-      if (filters.materials.length > 0 && !filters.materials.some((m) => p.materials.includes(m))) {
-        return false;
-      }
-      if (filters.scales.length > 0 && !filters.scales.some((s) => p.scales.includes(s))) {
-        return false;
+      // 1. Filtragem por Janela/Universo Temático
+      if (activeUniverse !== 'ALL') {
+        const itemUniverse = p.universe || toProductUniverse(p.universe, p.name, p.category);
+        if (activeUniverse === 'ANIME_MANGA') {
+          if (itemUniverse !== 'ANIME_MANGA') return false;
+        } else if (activeUniverse === 'POKEMON_TCG') {
+          const isPokemon = itemUniverse === 'POKEMON_TCG' || (!p.universe && p.department === 'TCG');
+          if (!isPokemon) return false;
+        } else if (activeUniverse === 'POP_CULTURE_GEEK') {
+          if (itemUniverse !== 'POP_CULTURE_GEEK') return false;
+        } else if (activeUniverse === 'DIORAMA_ACCESSORY') {
+          if (itemUniverse !== 'DIORAMA_ACCESSORY') return false;
+        }
       }
 
-      return true;
+      // 2. Sub-filtro de Categoria
+      if (activeCategory === 'ALL') return true;
+      if (activeCategory === 'TCG') return p.department === 'TCG' || p.category === 'TCG';
+
+      const pEnum = toProductCategory(p.category);
+      const catEnum = toProductCategory(activeCategory);
+      return p.category === activeCategory || pEnum === activeCategory || pEnum === catEnum;
     });
-  }, [products, selectedCategory, search, filters]);
+  }, [products, search, activeUniverse, activeCategory]);
+
+  const featuredProduct = useMemo(() => {
+    const fid = getFeaturedProductId();
+    if (fid) {
+      const match = products.find(p => p.id === fid && p.active) || products.find(p => p.id === fid);
+      if (match) return match;
+    }
+    return products.find(p => p.featured && p.active) || products.find(p => p.featured) || null;
+  }, [products]);
 
   function addToCart(item: CartItem) {
-    setCart((prev) => {
-      const idx = prev.findIndex(
-        (i) =>
-          i.product.id === item.product.id &&
-          i.scale === item.scale &&
-          i.finish === item.finish &&
-          i.material === item.material &&
-          i.color === item.color &&
-          i.isCustom3D === item.isCustom3D
+    setCart(prev => {
+      const idx = prev.findIndex(i => 
+        i.product.id === item.product.id && 
+        i.scale === item.scale && 
+        i.finish === item.finish && 
+        i.material === item.material &&
+        i.observations === item.observations
       );
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = { ...next[idx], qty: next[idx].qty + item.qty };
         return next;
       }
-      return [item, ...prev];
+      return [...prev, item];
     });
     setCartOpen(true);
   }
@@ -106,255 +152,416 @@ export default function Home() {
   function handleBuyNow(product: Product) {
     addToCart({
       product,
-      scale: product.scales[0] || 'Padrão (12 a 15 cm)',
-      finish: 'Peça Crua (Padrão)',
-      material: product.materials[0] || 'PLA Premium',
-      color: 'Roxo ImagineLab',
+      scale: product.scales[0] || '1:10',
+      finish: 'Peça Crua',
+      material: product.materials[0] || 'PLA',
       qty: 1,
       unitPrice: product.basePrice,
-      customized: false,
+      customized: false
     });
   }
 
-  const activeFiltersCount =
-    filters.categories.length + filters.materials.length + filters.scales.length;
+  function handleBuyCampaignItem(product: Product, effectivePrice: number, campaignTag: string, customBadge?: string) {
+    addToCart({
+      product,
+      scale: product.scales?.[0] || 'Escala 1:10 (~15 cm)',
+      finish: 'Peça Crua',
+      material: product.materials?.[0] || 'Resina',
+      qty: 1,
+      unitPrice: effectivePrice,
+      promoPrice: effectivePrice,
+      promoBadge: customBadge || campaignTag,
+      campaignTag,
+      origin: 'SEASONAL_CAMPAIGN',
+      customized: false
+    });
+  }
+
+  function handleCustomizeCampaignItem(product: Product, effectivePrice: number, campaignTag: string) {
+    setConfigProduct({
+      ...product,
+      basePrice: effectivePrice,
+      promoPrice: effectivePrice,
+      campaignTag,
+      origin: 'SEASONAL_CAMPAIGN'
+    } as any);
+  }
+
+  function removeFromCart(idx: number) {
+    setCart(prev => prev.filter((_, i) => i !== idx));
+  }
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] flex flex-col selection:bg-purple-900/50 selection:text-cyan-300">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#0B0D13] text-white flex flex-col font-sans selection:bg-[#7C3AED] selection:text-white">
+      {/* Header com Logo ImagineLab */}
       <Header
         cart={cart}
         onCartOpen={() => setCartOpen(true)}
         onOrcamento={() => setOrcamentoOpen(true)}
+        onOpenWorkshopModal={() => setWorkshopModalOpen(true)}
         search={search}
         onSearch={setSearch}
       />
 
-      <main className="flex-1">
-        <Hero
-          onOrcamento={() => setOrcamentoOpen(true)}
-          onExploreCatalog={() => {
-            const el = document.getElementById('catalogo');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          onHowItWorks={() => {
-            const el = document.getElementById('como-funciona');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }}
-        />
+      {/* Hero Editorial com Headline Roxo/Ciano */}
+      <Hero 
+        onOrcamento={() => setOrcamentoOpen(true)} 
+        featuredProduct={featuredProduct}
+        products={products}
+        onConfigure={setConfigProduct}
+        onOpenWorkshopModal={() => setWorkshopModalOpen(true)}
+      />
 
-        {/* Catalog Section */}
-        <section id="catalogo" className="py-12 md:py-16 px-4 md:px-8 max-w-[1440px] mx-auto w-full">
-          {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-            <div>
-              <span className="text-xs font-black uppercase tracking-widest text-[#4CA8B8] mb-1.5 block">
-                Catálogo Exclusivo
-              </span>
-              <h2 className="font-heading text-2xl md:text-4xl font-black text-white tracking-tight">
-                Peças Prontas & Sob Encomenda
-              </h2>
-              <p className="text-xs md:text-sm text-slate-400 mt-1">
-                Todas as peças podem ser customizadas em escala, cor e material diretamente com a gente.
-              </p>
-            </div>
+      {/* Janelas / Universos Temáticos na Vitrine */}
+      <StorefrontHub
+        activeTab={activeUniverse}
+        onTabChange={(tab) => {
+          setActiveUniverse(tab);
+          const el = document.getElementById('catalogo');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        products={products}
+        totalProductsCount={products.filter(p => p.active).length}
+        activeCampaign={activeCampaign}
+      />
 
-            {/* Quick Action: Orçador Direto */}
-            <button
-              type="button"
-              onClick={() => setOrcamentoOpen(true)}
-              className="h-10 px-5 rounded-xl text-xs font-bold bg-[#141C2E] hover:bg-[#1E2942] border border-cyan-500/40 text-cyan-300 flex items-center gap-2 self-start md:self-auto shadow-sm"
-            >
-              <span>📐 Tem um modelo próprio? Envie o STL</span>
-            </button>
+      {/* SECTION 01 — Faixa de Destaque / Manifesto ImagineLab (Fundo Roxo) */}
+      <section className="w-full max-w-full bg-gradient-to-r from-[#6C4AB6] via-[#7C3AED] to-[#4F46E5] text-white py-12 md:py-20 px-4 md:px-8 overflow-hidden shadow-2xl relative">
+        <div className="absolute inset-0 bg-[radial-gradient(#38BDF8_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-start relative z-10">
+          <div className="md:col-span-3 text-[11px] font-bold tracking-[0.25em] uppercase text-purple-200/90 pt-2">
+            IMAGINELAB • 3D STUDIO
           </div>
-
-          {/* Quick Categories Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
-                selectedCategory === 'ALL'
-                  ? 'bg-[#5E488C] border-purple-500 text-white shadow-lg glow-purple'
-                  : 'bg-[#121828] border-[#222D42] text-slate-400 hover:text-white'
-              }`}
-            >
-              ✨ Todos ({products.filter((p) => p.active).length})
-            </button>
-
-            {ALL_CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
-                  selectedCategory === cat
-                    ? 'bg-[#5E488C] border-purple-500 text-white shadow-lg glow-purple'
-                    : 'bg-[#121828] border-[#222D42] text-slate-400 hover:text-white'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => setFilterDrawerOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#121828] border border-[#2A3752] text-slate-300 hover:text-white shrink-0 ml-auto flex items-center gap-1.5"
-            >
-              <span>⚡ Filtros Avançados</span>
-              {activeFiltersCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-cyan-400 text-slate-950 text-[10px] font-black flex items-center justify-center">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Product Grid */}
-          {activeProducts.length === 0 ? (
-            <div className="p-16 rounded-3xl glass-card text-center flex flex-col items-center gap-3">
-              <span className="text-5xl opacity-40">🔍</span>
-              <h3 className="text-base font-bold text-white">Nenhum produto encontrado</h3>
-              <p className="text-xs text-slate-400 max-w-sm">
-                Tente ajustar os termos da busca ou limpar os filtros para ver mais criações da ImagineLab.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch('');
-                  setSelectedCategory('ALL');
-                  setFilters({ categories: [], materials: [], scales: [] });
-                }}
-                className="mt-2 h-9 px-4 rounded-xl text-xs font-bold bg-[#5E488C] text-white"
-              >
-                Limpar Todos os Filtros
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeProducts.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  onConfigure={setConfigProduct}
-                  onBuyNow={handleBuyNow}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* How It Works Workflow Section */}
-        <HowItWorks onOrcamento={() => setOrcamentoOpen(true)} />
-
-        {/* Brand Trust Section */}
-        <BrandTrust />
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-[#070A10] border-t border-[#1E2638] py-12 px-4 md:px-8 text-slate-400 text-xs">
-        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Coluna 1: Logo & Info */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl overflow-hidden border border-purple-500/40 bg-[#111726] p-0.5 flex items-center justify-center">
-                <img src="/images/logo.png" alt="ImagineLab" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-heading font-black text-lg text-white">
-                Imagine<span className="text-cyan-400">Lab</span> 3D
-              </span>
-            </div>
-            <p className="text-slate-400 leading-relaxed text-xs">
-              Onde a imaginação vira realidade em 3D. Impressão personalizada, peças funcionais e colecionáveis com acabamento premium.
-            </p>
-            <div className="flex items-center gap-2 text-slate-300 font-semibold mt-1">
-              <span>📍 Pinhalzinho - SP</span>
-              <span>•</span>
-              <span className="text-cyan-300">CEP 13990-000</span>
-            </div>
-          </div>
-
-          {/* Coluna 2: Navegação */}
-          <div className="flex flex-col gap-2">
-            <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-1">Navegação</h4>
-            <a href="#catalogo" className="hover:text-cyan-300 transition-colors">Catálogo de Produtos</a>
-            <button onClick={() => setOrcamentoOpen(true)} className="text-left hover:text-cyan-300 transition-colors">
-              Simulador STL / Orçamento 3D
-            </button>
-            <a href="#como-funciona" className="hover:text-cyan-300 transition-colors">Como Produzimos</a>
-            <a href="/admin" className="hover:text-purple-300 transition-colors">Área do Administrador</a>
-          </div>
-
-          {/* Coluna 3: Materiais e Tecnologia */}
-          <div className="flex flex-col gap-2">
-            <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-1">Tecnologias</h4>
-            <span>• PLA Premium & PLA Silk Metalizado</span>
-            <span>• PETG Técnico de Alta Resistência</span>
-            <span>• Resina 8K Ultra-Detalhe Fotopolimérica</span>
-            <span>• Fatiamento Micrométrico em Camadas</span>
-          </div>
-
-          {/* Coluna 4: Contato & Redes */}
-          <div className="flex flex-col gap-2">
-            <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-1">Contato</h4>
-            <a
-              href="https://instagram.com/imaginelab.3d"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-pink-400 transition-colors"
-            >
-              <span>📸</span>
-              <span>@imaginelab.3d</span>
-            </a>
-            <a
-              href="https://wa.me/5519998214411"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-emerald-400 transition-colors"
-            >
-              <span>💬</span>
-              <span>(19) 99821-4411 (WhatsApp)</span>
-            </a>
-            <span className="text-[11px] text-slate-400 mt-1">
-              Atendimento de Segunda a Sábado • Pinhalzinho-SP para todo o Brasil
+          <div className="md:col-span-9 flex flex-col">
+            <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-cyan-200 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-300 animate-ping" />
+              <span>01 — SOB MEDIDA</span>
             </span>
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.95] text-white uppercase tracking-tight">
+              01 — SOB MEDIDA | SUA IDEIA FORA DA TELA. CRIAMOS PROJETOS PERSONALIZADOS DO ZERO.
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 02 — Catálogo de Produtos */}
+      <section id="catalogo" className="w-full max-w-full bg-[#ECE8DE] text-[#171717] py-12 md:py-24 px-4 md:px-8 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto">
+          
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-10 pb-6 border-b border-[#D6D0C2]">
+            <div>
+              <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-[#737373] block mb-2">
+                02 — Catálogo ImagineLab
+              </span>
+              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#171717] uppercase tracking-wide leading-none">
+                {activeUniverse === 'CAMPAIGN' && activeCampaign ? activeCampaign.name : 'Escolha a sua próxima peça.'}
+              </h2>
+            </div>
+            <button
+              onClick={() => {
+                setActiveUniverse('ALL');
+                setActiveCategory('ALL');
+              }}
+              className="text-xs font-bold tracking-wider uppercase text-[#171717] hover:text-[#7C3AED] transition-colors flex items-center gap-1.5 self-start md:self-end cursor-pointer"
+            >
+              <span>Ver catálogo completo</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          {activeUniverse === 'CAMPAIGN' && activeCampaign ? (
+            <CampaignShowcase
+              campaign={activeCampaign}
+              catalogProducts={products}
+              onBuyCampaignItem={handleBuyCampaignItem}
+              onCustomizeCampaignItem={handleCustomizeCampaignItem}
+            />
+          ) : (
+            <>
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 w-full max-w-full pb-6 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {[
+                  { id: 'ALL', label: 'Todos' },
+                  { id: 'FIGURE_POKEMON', label: 'Figures Pokémon' },
+                  { id: 'DIORAMA', label: 'Dioramas' },
+                  { id: 'CHIBI', label: 'Colecionáveis' },
+                  { id: 'ACCESSORY_3D', label: 'Geek 3D' },
+                  { id: 'TCG', label: 'TCG & Selados' },
+                ].map(tab => {
+                  const active = activeCategory === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveCategory(tab.id)}
+                      className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                        active 
+                          ? 'bg-[#171717] text-white shadow-md ring-2 ring-[#7C3AED]/40' 
+                          : 'bg-[#DCD6C8] text-[#525252] hover:bg-[#D0C9B8] hover:text-[#171717]'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Product Grid */}
+              {isLoading && filteredProducts.length === 0 ? (
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center justify-center gap-2.5 py-2.5 px-5 rounded-full bg-[#DCD6C8] border border-[#D0C9B8] text-xs font-bold uppercase tracking-wider text-[#525252] max-w-sm mx-auto shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#7C3AED] animate-ping" />
+                    <span>Conectando ao catálogo ImagineLab...</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                      <div key={i} className="flex flex-col animate-pulse select-none">
+                        <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#D8D2C4] border border-black/5">
+                          <div className="absolute top-3 left-3 w-8 h-3.5 rounded bg-[#C9C2B2]" />
+                          <div className="absolute top-3 right-3 w-20 h-4 rounded bg-[#C9C2B2]" />
+                          <div className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-[#C9C2B2]" />
+                        </div>
+                        <div className="pt-3 pb-1 flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <div className="w-20 h-3 rounded bg-[#D0C9B8]" />
+                            <div className="w-12 h-3 rounded bg-[#D0C9B8]" />
+                          </div>
+                          <div className="w-3/4 h-6 rounded bg-[#D0C9B8]" />
+                          <div className="mt-1 pt-2 border-t border-black/5 flex items-end justify-between">
+                            <div className="flex flex-col gap-1">
+                              <div className="w-14 h-2.5 rounded bg-[#D0C9B8]" />
+                              <div className="w-20 h-6 rounded bg-[#D0C9B8]" />
+                            </div>
+                            <div className="w-16 h-4 rounded bg-[#D0C9B8]" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : loadError && filteredProducts.length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-center max-w-md mx-auto gap-4">
+                  <div className="text-3xl">🔮</div>
+                  <h3 className="font-display text-2xl uppercase">Catálogo em atualização</h3>
+                  <p className="text-xs text-[#737373]">
+                    As peças estão sendo organizadas no laboratório. Toque no botão abaixo para atualizar a vitrine.
+                  </p>
+                  <button
+                    onClick={() => loadCatalog()}
+                    className="px-6 py-2.5 rounded-full bg-[#171717] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#7C3AED] transition-colors cursor-pointer"
+                  >
+                    Atualizar Vitrine
+                  </button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-center gap-2">
+                  <span className="text-3xl opacity-40">🔍</span>
+                  <h3 className="font-display text-2xl uppercase text-[#171717]">Nenhum item nesta categoria</h3>
+                  <button
+                    onClick={() => {
+                      setActiveUniverse('ALL');
+                      setActiveCategory('ALL');
+                    }}
+                    className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mt-2 hover:underline cursor-pointer"
+                  >
+                    Voltar a todos os produtos
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
+                  {filteredProducts.map((p, idx) => (
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      index={idx + 1}
+                      onConfigure={setConfigProduct}
+                      onBuyNow={handleBuyNow}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
+      </section>
+
+      {/* BANNER / JANELA FIXA: Oficina Sob Medida (CustomSTLBanner) */}
+      <CustomSTLBanner onOrcamento={() => setOrcamentoOpen(true)} />
+
+      {/* SECTION 03 — Como Funciona / Bastidores do Laboratório */}
+      <section id="como-funciona" className="w-full max-w-full bg-[#0B0D13] text-white py-16 md:py-24 px-4 md:px-8 border-t border-[#1E2433] overflow-hidden scroll-mt-20">
+        <div id="oficina" className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left: Player de Vídeo dos Bastidores */}
+          <div className="lg:col-span-6 w-full">
+            <WorkshopVideoPlayer />
+          </div>
+
+          {/* Right Process Explanation */}
+          <div className="lg:col-span-6 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping" />
+              <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-[#38BDF8]">
+                03 — COMO FUNCIONA • BASTIDORES
+              </span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-white uppercase tracking-tight leading-[0.95] mb-6">
+              Da modelagem digital ao acabamento final.
+            </h2>
+            <p className="text-sm md:text-base text-[#94A3B8] mb-8 leading-relaxed max-w-xl">
+              A impressão 3D é só o início. No laboratório ImagineLab realizamos lavagem, cura UV, lixamento fino, pintura artística manual e embalagem reforçada — tudo com atenção milimétrica a cada detalhe.
+            </p>
+
+            <div className="flex flex-col border-t border-[#1E2433]">
+              <div className="py-4 border-b border-[#1E2433] flex items-start gap-4">
+                <span className="font-mono text-xs text-[#7C3AED] font-bold pt-0.5">01</span>
+                <div>
+                  <h4 className="font-display text-xl text-white uppercase tracking-wide">Impressão 3D de Alta Resolução</h4>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">Tecnologias FDM e Resina 8K configuradas especificamente para cada geometria e escala.</p>
+                </div>
+              </div>
+
+              <div className="py-4 border-b border-[#1E2433] flex items-start gap-4">
+                <span className="font-mono text-xs text-[#7C3AED] font-bold pt-0.5">02</span>
+                <div>
+                  <h4 className="font-display text-xl text-white uppercase tracking-wide">Pós-Processamento e Pintura Manual</h4>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">Remoção cuidadosa de suportes, cura UV, primer e aplicação artesanal de tintas.</p>
+                </div>
+              </div>
+
+              <div className="py-4 border-b border-[#1E2433] flex items-start gap-4">
+                <span className="font-mono text-xs text-[#7C3AED] font-bold pt-0.5">03</span>
+                <div>
+                  <h4 className="font-display text-xl text-white uppercase tracking-wide">Envio Protegido para Todo o Brasil</h4>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">Embalagem multicamada antichoque direta de Pinhalzinho-SP com rastreio total.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botão de destaque para abrir o modal completo de processo */}
+            <button
+              onClick={() => setWorkshopModalOpen(true)}
+              className="mt-8 self-start px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-950/80 to-purple-900/60 hover:from-purple-900 hover:to-purple-800 border border-purple-500/40 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2.5 shadow-lg shadow-purple-950/50 hover:shadow-purple-700/30 transition-all cursor-pointer ring-1 ring-purple-400/30"
+            >
+              <span className="text-[#38BDF8]">⚡</span>
+              <span>Conhecer as 4 Etapas Detalhadas</span>
+              <span className="text-[#38BDF8]">→</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* SECTION 04 — Sob Medida: Chamada Direta WhatsApp */}
+      <section className="w-full max-w-full bg-[#ECE8DE] text-[#171717] py-16 md:py-24 px-4 md:px-8 border-t border-[#D6D0C2] overflow-hidden">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="md:col-span-7 flex flex-col">
+            <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-[#7C3AED] mb-2">
+              NÃO ENCONTROU O QUE PROCURAVA?
+            </span>
+            <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-[#171717] uppercase tracking-tight leading-[0.92]">
+              Você imagina. <br />
+              A ImagineLab cria.
+            </h2>
+          </div>
+
+          <div className="md:col-span-5 flex flex-col items-start md:items-end gap-5">
+            <p className="text-sm md:text-base text-[#525252] leading-relaxed max-w-sm md:text-right">
+              Produzimos sob encomenda. Envie a referência, o link do modelo (Thingiverse, Printables, Drive) ou a sua ideia.
+            </p>
+            <button
+              onClick={() => setOrcamentoOpen(true)}
+              className="h-12 px-7 rounded-xl text-sm font-bold flex items-center gap-2 transition-all bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white shadow-xl cursor-pointer ring-1 ring-purple-400/40"
+            >
+              <span>SOLICITAR ORÇAMENTO NO WHATSAPP</span>
+              <span>💬</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 05 — Avaliações Autênticas */}
+      <ReviewsSection onOpenSubmitReview={() => setSubmitReviewOpen(true)} />
+
+      {/* Footer ImagineLab */}
+      <footer className="w-full max-w-full bg-[#0B0D13] text-white py-12 px-4 md:px-8 border-t border-[#1E2433] overflow-hidden">
+        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-8 border-b border-[#1E2433]">
+          {/* Logo ImagineLab */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-[#7C3AED] via-[#6C4AB6] to-[#38BDF8] p-[1.5px] shadow-lg shadow-purple-900/40">
+              <div className="w-full h-full bg-[#0B0D13] rounded-[10px] flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#38BDF8]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.12 6.4-6.05-4.06a2 2 0 0 0-2.17-.05L2.9 8.4A2 2 0 0 0 2 10.1v7.8a2 2 0 0 0 1.05 1.76l6.05 3.94a2 2 0 0 0 2.17.05l9.95-6.11A2 2 0 0 0 22 15.8V8a2 2 0 0 0-.88-1.6Z"/>
+                  <path d="m10 22 10-6"/>
+                  <path d="M10 22V10"/>
+                  <path d="m2 10 10-6"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-2xl tracking-wide uppercase text-white">
+                ImagineLab<span className="text-[#38BDF8]">.3D</span>
+              </span>
+              <span className="text-[10px] text-[#94A3B8] font-mono">
+                Pinhalzinho - SP • @imaginelab.3d
+              </span>
+            </div>
+          </div>
+
+          {/* Slogan */}
+          <div className="font-display text-2xl md:text-3xl uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#38BDF8]">
+            Onde a imaginação vira realidade em 3D
           </div>
         </div>
 
-        <div className="max-w-[1440px] mx-auto pt-6 border-t border-[#151C2C] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
-          <span>© {new Date().getFullYear()} ImagineLab 3D. Todos os direitos reservados.</span>
-          <span>Desenvolvido com tecnologia de ponta • Pinhalzinho-SP</span>
+        <div className="max-w-[1440px] mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
+          <div className="flex flex-wrap items-center gap-6">
+            <a href="#catalogo" className="hover:text-white transition-colors">Catálogo</a>
+            <a href="#como-funciona" className="hover:text-white transition-colors">Como Funciona</a>
+            <button onClick={() => setWorkshopModalOpen(true)} className="hover:text-[#38BDF8] transition-colors cursor-pointer">Bastidores</button>
+            <a href="#avaliacoes" className="hover:text-white transition-colors">Avaliações</a>
+            <button onClick={() => setOrcamentoOpen(true)} className="hover:text-white transition-colors cursor-pointer">Orçamentos</button>
+            <a href="https://instagram.com/imaginelab.3d" target="_blank" rel="noopener noreferrer" className="hover:text-[#38BDF8] transition-colors">
+              Instagram @imaginelab.3d
+            </a>
+          </div>
+          <div>
+            © 2026 IMAGINELAB • PINHALZINHO-SP • TODOS OS DIREITOS RESERVADOS
+          </div>
         </div>
       </footer>
 
-      {/* Modals and Drawers */}
-      <OrcamentoModal
-        open={orcamentoOpen}
-        onClose={() => setOrcamentoOpen(false)}
-        onAddToCart={addToCart}
-      />
-
+      {/* Modais de Interação */}
       <ProductCustomizeModal
         product={configProduct}
         onClose={() => setConfigProduct(null)}
         onAdd={addToCart}
       />
-
       <CartDrawer
         open={cartOpen}
         cart={cart}
         onClose={() => setCartOpen(false)}
-        onRemove={(idx) => setCart((prev) => prev.filter((_, i) => i !== idx))}
+        onRemove={removeFromCart}
         onClear={() => setCart([])}
       />
-
-      <FilterDrawer
-        open={filterDrawerOpen}
-        onClose={() => setFilterDrawerOpen(false)}
-        filters={filters}
-        onFilterChange={setFilters}
-        onClear={() => setFilters({ categories: [], materials: [], scales: [] })}
+      <OrcamentoModal
+        open={orcamentoOpen}
+        onClose={() => setOrcamentoOpen(false)}
+      />
+      <WorkshopProcessModal
+        isOpen={workshopModalOpen}
+        onClose={() => setWorkshopModalOpen(false)}
+        onRequestCustomQuote={() => {
+          setWorkshopModalOpen(false);
+          setOrcamentoOpen(true);
+        }}
+      />
+      <SubmitReviewModal
+        open={submitReviewOpen}
+        onClose={() => setSubmitReviewOpen(false)}
       />
     </div>
   );

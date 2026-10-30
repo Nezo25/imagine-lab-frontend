@@ -1,31 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Space Grotesk', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', Impact, sans-serif;
   --font-mono: 'DM Mono', monospace;
 
-  /* ImagineLab Color Palette */
-  --color-lab-purple: #5E488C;
-  --color-lab-purple-light: #7E63B8;
-  --color-lab-purple-hover: #4D3974;
-  --color-lab-purple-dim: rgba(94, 72, 140, 0.2);
+  /* ImagineLab Dark Mode Palette */
+  --color-forge-bg:       #0B0D13;
+  --color-forge-surface:  #131722;
+  --color-forge-card:     #1E2433;
+  --color-forge-border:   #2E384D;
+  --color-forge-muted:    #64748B;
+  --color-forge-text:     #F8FAFC;
+  --color-forge-subtext:  #94A3B8;
 
-  --color-lab-cyan: #4CA8B8;
-  --color-lab-cyan-light: #67C5D6;
-  --color-lab-cyan-hover: #398896;
-  --color-lab-cyan-dim: rgba(76, 168, 184, 0.18);
+  /* ImagineLab Vibrant Accent Colors (Purple & Cyan) */
+  --color-forge-orange:       #7C3AED;
+  --color-forge-orange-hover: #6D28D9;
+  --color-forge-orange-dim:   rgba(124,58,237,0.18);
 
-  --color-lab-bg: #0A0D14;
-  --color-lab-surface: #0F1420;
-  --color-lab-card: #151C2C;
-  --color-lab-card-hover: #1B2438;
-  --color-lab-border: #222D42;
-  --color-lab-border-light: #2E3C56;
+  --color-brand-purple:       #7C3AED;
+  --color-brand-purple-hover: #6D28D9;
+  --color-brand-purple-dim:   rgba(124,58,237,0.18);
+  --color-brand-cyan:         #38BDF8;
+  --color-brand-cyan-hover:   #0EA5E9;
+  --color-brand-cyan-dim:     rgba(56,189,248,0.18);
 
-  --color-lab-text: #F8FAFC;
-  --color-lab-subtext: #94A3B8;
-  --color-lab-muted: #64748B;
+  /* Pokemon / Categories Type Badges */
+  --color-type-fire:      #EF4444;
+  --color-type-fire-bg:   rgba(239,68,68,0.15);
+  --color-type-ghost:     #8B5CF6;
+  --color-type-ghost-bg:  rgba(139,92,246,0.15);
+  --color-type-water:     #38BDF8;
+  --color-type-water-bg:  rgba(56,189,248,0.15);
+  --color-type-electric:  #FACC15;
+  --color-type-electric-bg: rgba(250,204,21,0.15);
+  --color-type-grass:     #22C55E;
+  --color-type-grass-bg:  rgba(34,197,94,0.15);
+  --color-type-psychic:   #EC4899;
+  --color-type-psychic-bg: rgba(236,72,153,0.15);
+  --color-type-dragon:    #6366F1;
+  --color-type-dragon-bg: rgba(99,102,241,0.15);
+  --color-type-steel:     #94A3B8;
+  --color-type-steel-bg:  rgba(148,163,184,0.15);
 }
 
 *, *::before, *::after {
@@ -33,70 +53,37 @@
 }
 
 html, body, #root {
+  width: 100%;
+  max-width: 100% !important;
   min-height: 100%;
+  overflow-x: hidden !important;
+  position: relative;
+  touch-action: pan-y;
   margin: 0;
   padding: 0;
-  background-color: #0A0D14;
-  color: #F8FAFC;
+  background: var(--color-forge-bg);
+  color: var(--color-forge-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom modern scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0A0D14;
-}
-::-webkit-scrollbar-thumb {
-  background: #222D42;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #4CA8B8;
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-forge-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-forge-muted); }
+
+::selection { background: rgba(124,58,237,0.3); color: #38BDF8; }
+
+.font-display {
+  font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+  letter-spacing: 0.03em;
 }
 
-/* Glow and Glass Utility Classes */
-.glass-panel {
-  background: rgba(15, 20, 32, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(76, 168, 184, 0.15);
-}
-
-.glass-card {
-  background: rgba(21, 28, 44, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(34, 45, 66, 0.8);
-}
-
+/* Efeito de brilho suave (glow) para cards e imagens */
 .glow-purple {
-  box-shadow: 0 0 25px -4px rgba(94, 72, 140, 0.5);
+  box-shadow: 0 0 25px rgba(124, 58, 237, 0.25);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 25px -4px rgba(76, 168, 184, 0.5);
-}
-
-.tech-grid {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.subtle-radial {
-  background: radial-gradient(circle at 50% 0%, rgba(94, 72, 140, 0.15) 0%, rgba(76, 168, 184, 0.08) 35%, transparent 70%);
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
 }

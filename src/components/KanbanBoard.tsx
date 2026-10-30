@@ -2,25 +2,28 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { fetchApi } from '../api/client';
 import { toast } from './Toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { useSearchParams } from 'react-router-dom';
 import { OrderDetailModal } from './OrderDetailModal';
-import { getStoredOrders, formatPrice } from '@/services/storage';
 
-export type KanbanColumn =
-  | 'NEW_LEAD'
-  | 'NEGOTIATING_APPROVED'
-  | 'SLICING_QUEUE'
-  | 'PRINTING'
-  | 'POST_PROCESSING'
-  | 'READY_SHIPPED';
+type KanbanColumn = 'NEW_LEAD' | 'NEGOTIATING_APPROVED' | 'SLICING_QUEUE' | 'PRINTING' | 'POST_PROCESSING' | 'READY_SHIPPED';
 
-const COLUMNS: { id: KanbanColumn; label: string; icon: string }[] = [
+const COLUMNS: { id: KanbanColumn, label: string, icon: string }[] = [
   { id: 'NEW_LEAD', label: 'Novos Leads', icon: '📥' },
   { id: 'NEGOTIATING_APPROVED', label: 'Negociação/Aprovado', icon: '💬' },
-  { id: 'SLICING_QUEUE', label: 'Fila Fatiamento', icon: '⚙️' },
-  { id: 'PRINTING', label: 'Em Impressão', icon: '🖨️' },
-  { id: 'POST_PROCESSING', label: 'Acabamento/Pintura', icon: '🎨' },
-  { id: 'READY_SHIPPED', label: 'Prontos / Enviados', icon: '🚀' },
+  { id: 'SLICING_QUEUE', label: 'Fila 3D', icon: '⚙️' },
+  { id: 'PRINTING', label: 'Imprimindo', icon: '🖨️' },
+  { id: 'POST_PROCESSING', label: 'Pintura', icon: '🎨' },
+  { id: 'READY_SHIPPED', label: 'Enviados', icon: '🚀' },
 ];
+
+export interface OrderKanbanItemDTO {
+  itemName: string;
+  quantity: number;
+  finishType: string;
+  filamentColor?: string;
+  scale?: string;
+  printTimeMinutes?: number;
+}
 
 export interface OrderKanbanDTO {
   id: number;
@@ -31,214 +34,211 @@ export interface OrderKanbanDTO {
   totalAmount: number;
   kanbanColumn: KanbanColumn;
   tags: string[];
+  items?: OrderKanbanItemDTO[];
+  customerNotes?: string;
+  internalNotes?: string;
 }
 
 export function KanbanBoard() {
-  const [board, setBoard] = useState<Record<KanbanColumn, OrderKanbanDTO[]>>({
-    NEW_LEAD: [],
-    NEGOTIATING_APPROVED: [],
-    SLICING_QUEUE: [],
-    PRINTING: [],
-    POST_PROCESSING: [],
-    READY_SHIPPED: [],
-  });
+  const [board, setBoard] = useState<Record<KanbanColumn, OrderKanbanDTO[]>>({} as any);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('email') || searchParams.get('os') || searchParams.get('phone') || '');
   const [selectedOrder, setSelectedOrder] = useState<OrderKanbanDTO | null>(null);
 
-  const fetchKanban = async () => {
+    const fetchKanban = async () => {
     try {
       setLoading(true);
       const res: any = await fetchApi(`/admin/orders/kanban?t=${Date.now()}`);
-      if (res && typeof res === 'object') {
-        setBoard(res);
-        return;
-      }
+      setBoard(res);
     } catch (err) {
-      // Fallback gracioso com os pedidos locais
+      toast.error('Erro ao carregar Kanban');
     } finally {
       setLoading(false);
     }
-
-    // Carrega dados locais caso a VPS ainda não esteja com o kanban pronto
-    const stored = getStoredOrders();
-    const fallbackBoard: Record<KanbanColumn, OrderKanbanDTO[]> = {
-      NEW_LEAD: [],
-      NEGOTIATING_APPROVED: [],
-      SLICING_QUEUE: [],
-      PRINTING: [],
-      POST_PROCESSING: [],
-      READY_SHIPPED: [],
-    };
-
-    stored.forEach((o, idx) => {
-      const col: KanbanColumn =
-        o.status === 'Entregue' || o.status === 'Enviado'
-          ? 'READY_SHIPPED'
-          : o.status === 'Em impressão'
-          ? 'PRINTING'
-          : o.status === 'Aguardando pgto'
-          ? 'NEGOTIATING_APPROVED'
-          : idx % 3 === 0
-          ? 'SLICING_QUEUE'
-          : 'NEW_LEAD';
-
-      fallbackBoard[col].push({
-        id: idx + 100,
-        shortCode: o.id,
-        customerName: o.cliente,
-        customerPhone: o.telefone || '(19) 99821-4411',
-        customerEmail: o.email || '',
-        totalAmount: parseFloat(o.valor.replace(',', '.')) || 120,
-        kanbanColumn: col,
-        tags: [o.produto.split(',')[0], o.tipoEntrega || 'Pinhalzinho'],
-      });
-    });
-
-    setBoard(fallbackBoard);
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchKanban();
-  }, []);
-
-  const handleDragEnd = async (result: DropResult) => {
-    const { source, destination } = result;
-    if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
-    const sourceCol = source.droppableId as KanbanColumn;
-    const destCol = destination.droppableId as KanbanColumn;
-
-    const sourceList = Array.from(board[sourceCol] || []);
-    const destList = sourceCol === destCol ? sourceList : Array.from(board[destCol] || []);
-
-    const [moved] = sourceList.splice(source.index, 1);
-    moved.kanbanColumn = destCol;
-    destList.splice(destination.index, 0, moved);
-
-    const nextBoard = {
-      ...board,
-      [sourceCol]: sourceList,
-      [destCol]: destList,
+    const handleUpdate = () => {
+      fetchKanban();
     };
-    setBoard(nextBoard);
-
-    try {
-      await fetchApi(`/admin/orders/${moved.id}/kanban-column`, {
-        method: 'PATCH',
-        body: JSON.stringify({ column: destCol }),
-      });
-    } catch (err) {}
-  };
+    window.addEventListener('forja_orders_updated', handleUpdate);
+    return () => window.removeEventListener('forja_orders_updated', handleUpdate);
+  }, []);
 
   const filteredBoard = useMemo(() => {
     if (!searchTerm) return board;
-    const q = searchTerm.toLowerCase();
-    const result: Record<KanbanColumn, OrderKanbanDTO[]> = {
-      NEW_LEAD: [],
-      NEGOTIATING_APPROVED: [],
-      SLICING_QUEUE: [],
-      PRINTING: [],
-      POST_PROCESSING: [],
-      READY_SHIPPED: [],
-    };
+    const lower = searchTerm.toLowerCase();
+    const result: Record<KanbanColumn, OrderKanbanDTO[]> = {} as any;
     for (const key in board) {
       const k = key as KanbanColumn;
-      result[k] = (board[k] || []).filter(
-        (c) =>
-          c.shortCode.toLowerCase().includes(q) ||
-          c.customerName.toLowerCase().includes(q) ||
-          c.customerPhone.toLowerCase().includes(q)
+      result[k] = board[k].filter(c => 
+        (c.shortCode && c.shortCode.toLowerCase().includes(lower)) || 
+        (c.customerName && c.customerName.toLowerCase().includes(lower)) ||
+        (c.customerEmail && c.customerEmail.toLowerCase().includes(lower)) ||
+        (c.customerPhone && c.customerPhone.toLowerCase().includes(lower))
       );
     }
     return result;
   }, [board, searchTerm]);
 
+  const totalFilteredCards = useMemo(() => Object.values(filteredBoard).flat(), [filteredBoard]);
+  const hasSingleResult = totalFilteredCards.length === 1;
+  const singleResultCard = hasSingleResult ? totalFilteredCards[0] : null;
+
+  useEffect(() => {
+    const osParam = searchParams.get('os');
+    if (osParam && Object.keys(board).length > 0) {
+      for (const col of Object.values(board)) {
+        const card = col.find(c => c.shortCode === osParam);
+        if (card) {
+          setSelectedOrder(card);
+          break;
+        }
+      }
+    }
+  }, [board, searchParams]);
+
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const sourceColId = result.source.droppableId as KanbanColumn;
+    const destColId = result.destination.droppableId as KanbanColumn;
+    
+    if (sourceColId === destColId && result.source.index === result.destination.index) {
+      return;
+    }
+
+    const sourceCol = [...board[sourceColId]];
+    const destCol = sourceColId === destColId ? sourceCol : [...board[destColId]];
+    const [moved] = sourceCol.splice(result.source.index, 1);
+    
+    moved.kanbanColumn = destColId;
+    destCol.splice(result.destination.index, 0, moved);
+
+    setBoard({
+      ...board,
+      [sourceColId]: sourceCol,
+      [destColId]: destCol
+    });
+
+    if (sourceColId !== destColId) {
+      try {
+        await fetchApi(`/admin/orders/${moved.id}/kanban-column?column=${destColId}`, {
+          method: 'PATCH'
+        });
+        toast.success(`Pedido ${moved.shortCode} movido`);
+      } catch (err) {
+        toast.error('Erro ao mover pedido');
+        fetchKanban();
+      }
+    }
+  };
+
+  if (loading) {
+    return <div className="text-gray-400 p-8 text-center text-sm">Carregando Kanban...</div>;
+  }
+
   return (
-    <div className="flex flex-col gap-4 h-full">
-      {/* Search Filter Bar */}
-      <div className="flex items-center justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Filtrar por código, cliente ou WhatsApp..."
+    <div className="flex flex-col h-full w-full">
+      <div className="mb-4 flex items-center gap-3">
+        <input 
+          type="text" 
+          placeholder="Buscar por e-mail, OS ou cliente..." 
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-10 px-4 rounded-xl text-xs bg-[#121828] border border-[#222D42] text-white w-full max-w-sm outline-none focus:border-cyan-400"
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            if (e.target.value) {
+              setSearchParams({ email: e.target.value });
+            } else {
+              setSearchParams({});
+            }
+          }}
+          className="w-full md:w-1/3 h-10 px-4 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 outline-none focus:border-orange-500 transition-colors shadow-inner"
         />
-        <button
-          type="button"
-          onClick={fetchKanban}
-          className="h-10 px-4 rounded-xl text-xs font-bold bg-[#141C2E] border border-[#222D42] text-cyan-300 hover:border-cyan-400 flex items-center gap-1.5"
-        >
-          🔄 Atualizar Quadro
-        </button>
+        {hasSingleResult && singleResultCard && (
+          <button 
+            onClick={() => { setSearchParams({ os: singleResultCard.shortCode }); setSelectedOrder(singleResultCard); }}
+            className="h-10 px-4 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-orange-500/20"
+          >
+            Abrir OS Direto 🚀
+          </button>
+        )}
       </div>
 
-      {/* DragDrop Board */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 min-h-[500px] overflow-x-auto pb-4">
-          {COLUMNS.map((col) => {
-            const items = filteredBoard[col.id] || [];
-            return (
-              <div
-                key={col.id}
-                className="flex flex-col rounded-2xl bg-[#0E131F] border border-[#1E2638] overflow-hidden min-w-[210px]"
-              >
-                {/* Column Header */}
-                <div className="p-3 border-b border-[#1E2638] bg-[#121828]/60 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm">{col.icon}</span>
-                    <span className="text-xs font-bold text-slate-200 line-clamp-1">{col.label}</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                    {items.length}
+      <div className="overflow-x-auto pb-4" style={{ minHeight: '600px' }}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-4 min-w-max h-full">
+            {COLUMNS.map(col => (
+              <div key={col.id} className="w-72 flex flex-col bg-gray-800/60 rounded-xl border border-gray-700/50 flex-shrink-0">
+                
+                <div className="p-3 border-b border-gray-700/50 bg-gray-800/80 rounded-t-xl flex items-center gap-2">
+                  <span className="text-lg">{col.icon}</span>
+                  <h3 className="font-bold text-sm text-gray-200">{col.label}</h3>
+                  <span className="ml-auto bg-gray-900 text-xs text-gray-400 font-bold px-2 py-0.5 rounded-full border border-gray-700">
+                    {filteredBoard[col.id]?.length || 0}
                   </span>
                 </div>
 
-                {/* Droppable Area */}
                 <Droppable droppableId={col.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
+                  {(provided) => (
+                    <div 
+                      ref={provided.innerRef} 
                       {...provided.droppableProps}
-                      className={`flex-1 p-2 flex flex-col gap-2 transition-colors ${
-                        snapshot.isDraggingOver ? 'bg-purple-950/20' : ''
-                      }`}
+                      className="flex-1 p-2 flex flex-col gap-2 min-h-[150px]"
                     >
-                      {items.map((item, index) => (
-                        <Draggable key={item.id.toString()} draggableId={item.id.toString()} index={index}>
-                          {(dragProvided) => (
+                      {filteredBoard[col.id]?.map((card, idx) => (
+                        <Draggable key={card.id.toString()} draggableId={card.id.toString()} index={idx}>
+                          {(provided, snapshot) => (
                             <div
-                              ref={dragProvided.innerRef}
-                              {...dragProvided.draggableProps}
-                              {...dragProvided.dragHandleProps}
-                              onClick={() => setSelectedOrder(item)}
-                              className="p-3 rounded-xl bg-[#151C2C] border border-[#222D42] hover:border-cyan-500/50 cursor-pointer shadow-sm transition-all"
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onClick={() => { setSearchParams({ os: card.shortCode }); setSelectedOrder(card); }}
+                              className={`bg-gray-900 p-3 rounded-lg border cursor-pointer transition-shadow ${
+                                snapshot.isDragging ? 'border-orange-500 shadow-lg shadow-orange-500/20 scale-105' : 'border-gray-700 hover:border-gray-500 hover:shadow-md'
+                              }`}
                             >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-[11px] font-mono font-bold text-cyan-300">
-                                  {item.shortCode}
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-mono font-bold text-orange-400 bg-orange-950/30 px-1.5 py-0.5 rounded">
+                                  {card.shortCode}
                                 </span>
-                                <span className="text-[11px] font-black text-white">
-                                  R$ {formatPrice(item.totalAmount)}
-                                </span>
+                                <span className="text-[10px] text-gray-500">Há 10 min</span>
                               </div>
-
-                              <div className="font-bold text-xs text-white line-clamp-1 mb-1.5">
-                                {item.customerName}
-                              </div>
-
-                              <div className="flex flex-wrap gap-1">
-                                {item.tags.map((t, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#1C263A] text-slate-400 line-clamp-1"
+                              
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-gray-300 text-sm font-medium">{card.customerName}</span>
+                                {card.customerPhone && (
+                                  <a 
+                                    href={`https://wa.me/${card.customerPhone.replace(/\D/g, '')}`} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs text-green-400 hover:underline flex items-center gap-1"
                                   >
+                                    📱 {card.customerPhone}
+                                  </a>
+                                )}
+                                {card.customerEmail && (
+                                  <span className="text-[11px] text-gray-500">📧 {card.customerEmail}</span>
+                                )}
+                              </div>
+                              
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {card.tags?.map(t => (
+                                  <span key={t} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-300 border border-gray-700">
                                     {t}
                                   </span>
                                 ))}
+                              </div>
+                              
+                              <div className="mt-3 pt-2 border-t border-gray-800 flex justify-between items-center">
+                                <span className="text-xs text-gray-400 font-semibold">Total</span>
+                                <span className="text-sm font-bold text-gray-100">
+                                  R$ {card.totalAmount.toFixed(2).replace('.', ',')}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -249,19 +249,21 @@ export function KanbanBoard() {
                   )}
                 </Droppable>
               </div>
-            );
-          })}
-        </div>
-      </DragDropContext>
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
 
-      <OrderDetailModal
-        order={selectedOrder}
-        onClose={() => setSelectedOrder(null)}
-        onStatusChange={(id, col) => {
-          if (selectedOrder) setSelectedOrder({ ...selectedOrder, kanbanColumn: col });
-          fetchKanban();
-        }}
-      />
+      {selectedOrder && (
+        <OrderDetailModal 
+          order={selectedOrder} 
+          onClose={() => { 
+            setSelectedOrder(null); 
+            searchParams.delete('os'); 
+            setSearchParams(searchParams); 
+          }} 
+        />
+      )}
     </div>
   );
 }

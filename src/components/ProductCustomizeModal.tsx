@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import type { CartItem, Finish, Material, Product, Scale } from '@/data/products';
-import { COLOR_PALETTE } from '@/data/products';
-import { TypeBadge } from './TypeBadge';
-import { formatPrice } from '@/services/storage';
+import { useState, useEffect } from 'react';
+import type { Product, CartItem } from '@/data/products';
 
 interface Props {
   product: Product | null;
@@ -11,333 +8,298 @@ interface Props {
 }
 
 export function ProductCustomizeModal({ product, onClose, onAdd }: Props) {
-  const [scale, setScale] = useState<Scale | string>('Padrão (12 a 15 cm)');
-  const [finish, setFinish] = useState<Finish>('Peça Crua (Padrão)');
-  const [material, setMaterial] = useState<Material>('PLA Premium');
-  const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0]);
-  const [qty, setQty] = useState(1);
-  const [observations, setObservations] = useState('');
-  const [added, setAdded] = useState(false);
+  if (!product) return null;
 
-  // CEP Shipping simulation
-  const [cep, setCep] = useState('');
-  const [shippingResult, setShippingResult] = useState<{ type: string; price: number; time: string }[] | null>(null);
-  const [calculatingShipping, setCalculatingShipping] = useState(false);
+  const isTcgItem = product.department === 'TCG' || product.category === 'TCG';
+
+  const defaultScales = product.scales && product.scales.length > 0 
+    ? product.scales 
+    : [isTcgItem ? 'Padrão / Selado' : 'Escala 1:10 (~15 cm)'];
+  
+  const defaultMaterials = product.materials && product.materials.length > 0 
+    ? product.materials 
+    : [isTcgItem ? 'Original Copag' : 'PLA Alta Resolução'];
+
+  const [scale, setScale] = useState(defaultScales[0] || '1:10');
+  const [material, setMaterial] = useState(defaultMaterials[0] || 'PLA');
+  const [finish, setFinish] = useState((product.finishOptions?.[0]?.name || product.finishOptions?.[0]?.label || 'Peça Crua') as string);
+  const [observations, setObservations] = useState('');
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     if (product) {
-      setScale(product.scales[0] || 'Padrão (12 a 15 cm)');
-      setFinish(product.finishOptions[0]?.label || 'Peça Crua (Padrão)');
-      setMaterial(product.materials[0] || 'PLA Premium');
-      setSelectedColor(COLOR_PALETTE[0]);
-      setQty(1);
+      const s = product.scales && product.scales.length > 0 
+        ? product.scales[0] 
+        : (isTcgItem ? 'Padrão / Selado' : 'Escala 1:10 (~15 cm)');
+      const m = product.materials && product.materials.length > 0 
+        ? product.materials[0] 
+        : (isTcgItem ? 'Original Copag' : 'PLA Alta Resolução');
+      const f = (product.finishOptions?.[0]?.name || product.finishOptions?.[0]?.label || (isTcgItem ? 'Novo / Lacrado' : 'Peça Crua')) as string;
+      setScale(s);
+      setMaterial(m);
+      setFinish(f);
       setObservations('');
-      setAdded(false);
-      setShippingResult(null);
+      setQty(1);
     }
-  }, [product]);
+  }, [product, isTcgItem]);
 
-  if (!product) return null;
+  const selectedFinishObj = product.finishOptions?.find(f => (f.name || f.label) === finish);
+  const finishExtra = selectedFinishObj?.extra || 0;
+  const isOutOfStock = Boolean(selectedFinishObj?.outOfStock);
+  const basePrice = (product as any).promoPrice || product.basePrice;
+  const unitPrice = basePrice + finishExtra;
+  const totalPrice = unitPrice * qty;
 
-  const finishExtra = product.finishOptions.find((f) => f.label === finish)?.extra ?? 0;
-  const unitPrice = product.basePrice + finishExtra;
-  const total = unitPrice * qty;
-
-  function handleCalculateShipping() {
-    const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length < 8) return;
-
-    setCalculatingShipping(true);
-    setTimeout(() => {
-      // Simulação realista com base na origem Pinhalzinho-SP (CEP 13990-000)
-      const isLocal = cleanCep.startsWith('13990') || cleanCep.startsWith('139');
-      setShippingResult([
-        {
-          type: 'Retirada no Laboratório ImagineLab (Pinhalzinho-SP)',
-          price: 0,
-          time: 'Pronto após impressão',
-        },
-        {
-          type: isLocal ? 'Entrega Local Express (Pinhalzinho/Região)' : 'SEDEX Expresso',
-          price: isLocal ? 9.90 : 23.50,
-          time: isLocal ? '1 a 2 dias úteis' : '2 a 4 dias úteis',
-        },
-        {
-          type: 'PAC Encomenda Econômica',
-          price: isLocal ? 12.00 : 16.80,
-          time: '4 a 8 dias úteis',
-        },
-      ]);
-      setCalculatingShipping(false);
-    }, 450);
-  }
-
-  function handleAdd() {
+  function handleConfirm() {
+    if (!product || isOutOfStock) return;
     onAdd({
-      product: product!,
+      product,
       scale,
       finish,
-      material,
-      color: selectedColor.name,
+      material: material as any,
+      observations: observations.trim() || undefined,
       qty,
       unitPrice,
-      observations: observations.trim() || undefined,
       customized: true,
+      promoPrice: (product as any).promoPrice,
+      promoBadge: (product as any).promoBadge,
+      campaignTag: (product as any).campaignTag,
+      origin: (product as any).origin
     });
-    setAdded(true);
-    setTimeout(() => {
-      onClose();
-    }, 600);
+    onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-200" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-
-      <div
-        className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl overflow-hidden glass-panel border border-[#2E3C56] shadow-2xl z-10"
-        onClick={(e) => e.stopPropagation()}
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm select-none" onClick={onClose}>
+      <div 
+        className="w-full sm:max-w-2xl bg-[#0B0D13] border border-[#2E384D] rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] text-white"
+        onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#222D42] bg-[#0E131F]/90">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
-              {product.category}
-            </span>
-            <h2 className="text-lg md:text-xl font-black text-white">{product.name}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white"
+        {/* Top Image Preview Banner */}
+        <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full bg-[#131722] border-b border-[#2E384D] overflow-hidden">
+          <img 
+            src={product.image || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop'} 
+            alt={product.name} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D13] via-transparent to-black/40" />
+          
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 hover:bg-[#7C3AED] text-[#A3A3A3] hover:text-white transition-all border border-white/10 z-20 cursor-pointer"
           >
             ✕
           </button>
+
+          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+            <div>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-[#38BDF8] uppercase">
+                {product.category}
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-white uppercase leading-none mt-1">
+                {product.name}
+              </h2>
+            </div>
+            {product.department === 'TCG' && (
+              <span className="px-3 py-1 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-500/40 text-xs font-mono font-bold">
+                {product.expansionName || 'TCG OFICIAL'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Left Column: Image & Details (5 cols) */}
-          <div className="md:col-span-5 flex flex-col gap-4">
-            <div className="relative rounded-2xl overflow-hidden aspect-square bg-[#0A0D14] border border-[#222D42]">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#0E1422] border border-[#222D42] flex flex-col gap-2">
-              <span className="text-xs font-bold text-slate-300">Especificações Técnicas:</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {product.description || 'Produzido com polímeros de engenharia e inspeção de camadas individual.'}
-              </p>
-              <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-[#1C2638]">
-                <span>Tempo de Impressão:</span>
-                <span className="font-semibold text-white">~{product.printTimeH} horas</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Consumo de Matéria:</span>
-                <span className="font-semibold text-white">~{product.filamentG}g</span>
-              </div>
-            </div>
-
-            {/* Simulador de Frete Pinhalzinho */}
-            <div className="p-4 rounded-xl bg-[#0E1422] border border-[#222D42]">
-              <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">
-                Calcular Frete & Prazo (Origem: Pinhalzinho-SP)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  maxLength={9}
-                  placeholder="00000-000"
-                  value={cep}
-                  onChange={(e) => setCep(e.target.value)}
-                  className="flex-1 h-9 px-3 rounded-lg text-xs bg-[#151C2C] border border-[#2A3752] text-white outline-none focus:border-cyan-400"
-                />
-                <button
-                  type="button"
-                  disabled={calculatingShipping}
-                  onClick={handleCalculateShipping}
-                  className="h-9 px-4 rounded-lg text-xs font-bold bg-[#5E488C] hover:bg-[#4D3974] text-white shrink-0"
-                >
-                  {calculatingShipping ? '...' : 'Calcular'}
-                </button>
-              </div>
-
-              {shippingResult && (
-                <div className="mt-3 flex flex-col gap-1.5 pt-2 border-t border-[#1C2638]">
-                  {shippingResult.map((s, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-[#151C2C]">
-                      <div>
-                        <div className="font-semibold text-slate-200">{s.type}</div>
-                        <div className="text-[10px] text-slate-400">{s.time}</div>
-                      </div>
-                      <div className="font-bold text-cyan-300">
-                        {s.price === 0 ? 'Grátis' : `R$ ${formatPrice(s.price)}`}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Scrollable Form Body */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-sm">
+          
+          {/* Alerta de Prazo / Produção */}
+          <div className="flex gap-3 bg-[#131722] border border-purple-500/30 rounded-xl p-3.5 text-xs text-[#D4D4D4] leading-relaxed">
+            <span className="text-base leading-none text-[#7C3AED] shrink-0 mt-0.5">🔮</span>
+            <p>
+              {isTcgItem 
+                ? 'Produto autêntico e lacrado. Envio rápido direto de Pinhalzinho-SP com rastreio.'
+                : 'As peças da ImagineLab são impressas e finalizadas artesanalmente com rigoroso controle de qualidade.'}
+            </p>
           </div>
 
-          {/* Right Column: Customization Controls (7 cols) */}
-          <div className="md:col-span-7 flex flex-col gap-4">
-            {/* Scale */}
+          {/* Seleção de Escala / Tamanho */}
+          {!isTcgItem && defaultScales.length > 0 && (
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                Escala & Tamanho
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#A3A3A3] mb-2">
+                1. Dimensões / Escala
               </label>
               <div className="flex flex-wrap gap-2">
-                {product.scales.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setScale(s)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                      scale === s
-                        ? 'bg-purple-900/40 border-purple-500 text-white glow-purple'
-                        : 'bg-[#121828] border-[#222D42] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {defaultScales.map(s => {
+                  const active = scale === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setScale(s)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                        active 
+                          ? 'bg-[#7C3AED] text-white border-[#7C3AED] shadow-md shadow-purple-950/40' 
+                          : 'bg-[#131722] text-[#A3A3A3] border-[#2E384D] hover:border-[#475569]'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* Material */}
+          {/* Seleção de Material */}
+          {!isTcgItem && defaultMaterials.length > 0 && (
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                Material de Fabricação
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#A3A3A3] mb-2">
+                2. Tecnologia / Material
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {product.materials.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMaterial(m)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all border ${
-                      material === m
-                        ? 'bg-cyan-950/60 border-cyan-500 text-cyan-300'
-                        : 'bg-[#121828] border-[#222D42] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {m}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {defaultMaterials.map(m => {
+                  const active = material === m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMaterial(m)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                        active 
+                          ? 'bg-[#7C3AED] text-white border-[#7C3AED] shadow-md shadow-purple-950/40' 
+                          : 'bg-[#131722] text-[#A3A3A3] border-[#2E384D] hover:border-[#475569]'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* Color */}
+          {/* Seleção de Acabamento / Versão */}
+          {product.finishOptions && product.finishOptions.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                  Cor da Peça
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#A3A3A3]">
+                  {isTcgItem ? 'Tipo de Produto' : '3. Nível de Acabamento'}
                 </label>
-                <span className="text-xs font-semibold text-cyan-300">{selectedColor.name}</span>
+                <span className="text-[11px] text-[#94A3B8]">Estúdio ImagineLab 3D</span>
               </div>
-              <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-[#121828] border border-[#222D42]">
-                {COLOR_PALETTE.map((c) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    title={c.name}
-                    onClick={() => setSelectedColor(c)}
-                    className={`w-6 h-6 rounded-full transition-all border-2 ${
-                      selectedColor.name === c.name
-                        ? 'scale-125 border-cyan-400 ring-2 ring-cyan-400/40'
-                        : 'border-slate-700 hover:scale-110'
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {product.finishOptions.map((opt, i) => {
+                  const optName = String(opt.name || opt.label || `Acabamento ${i + 1}`);
+                  const active = finish === optName;
+                  const optOutOfStock = Boolean(opt.outOfStock);
+                  return (
+                    <button
+                      key={optName}
+                      type="button"
+                      disabled={optOutOfStock}
+                      onClick={() => setFinish(optName)}
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        optOutOfStock 
+                          ? 'opacity-40 bg-[#131722] border-[#2E384D] cursor-not-allowed'
+                          : active 
+                          ? 'bg-purple-950/30 border-[#7C3AED] shadow-md shadow-purple-950/30 ring-1 ring-[#7C3AED]' 
+                          : 'bg-[#131722] border-[#2E384D] hover:border-[#475569]'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                          <span>{optName}</span>
+                          {optOutOfStock && (
+                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-red-950/60 text-red-400 border border-red-800/40">
+                              Esgotado
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[10px] text-[#94A3B8]">
+                          {opt.extra === 0 ? 'Sem custo adicional' : `+ R$ ${opt.extra.toFixed(2).replace('.', ',')}`}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-semibold text-[#38BDF8]">
+                        R$ {(basePrice + opt.extra).toFixed(2).replace('.', ',')}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* Finish */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                Opções de Acabamento
-              </label>
-              <div className="flex flex-col gap-2">
-                {product.finishOptions.map((f) => (
-                  <button
-                    key={f.label}
-                    type="button"
-                    onClick={() => setFinish(f.label)}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all border ${
-                      finish === f.label
-                        ? 'bg-purple-900/30 border-purple-500 text-white'
-                        : 'bg-[#121828] border-[#222D42] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <span>{f.label}</span>
-                    <span className="font-bold text-cyan-300">
-                      {f.extra === 0 ? 'Sem custo extra' : `+ R$ ${formatPrice(f.extra)}`}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quantidade e Observações */}
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">
-                  Quantidade
-                </label>
-                <div className="flex items-center h-10 rounded-xl bg-[#121828] border border-[#222D42]">
-                  <button
-                    type="button"
-                    onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="w-10 h-full flex items-center justify-center text-slate-400 hover:text-white"
-                  >
-                    -
-                  </button>
-                  <span className="flex-1 text-center font-bold text-white text-sm">{qty}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQty(qty + 1)}
-                    className="w-10 h-full flex items-center justify-center text-slate-400 hover:text-white"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">
-                  Observação / Personalização
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Gravar nome na base, cor específica..."
-                  value={observations}
-                  onChange={(e) => setObservations(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl text-xs bg-[#121828] border border-[#222D42] text-white focus:border-cyan-400 outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Bottom Total & Add to Cart Action */}
-            <div className="mt-auto pt-4 border-t border-[#222D42] flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400">Total do Item</span>
-                <div className="text-2xl font-black text-white">
-                  R$ {formatPrice(total)}
-                </div>
-              </div>
-
+          {/* Quantidade */}
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#A3A3A3]">
+              Quantidade
+            </span>
+            <div className="flex items-center gap-3 bg-[#131722] border border-[#2E384D] rounded-xl p-1">
               <button
                 type="button"
-                onClick={handleAdd}
-                disabled={added}
-                className="h-12 px-6 rounded-xl font-black text-sm uppercase tracking-wide bg-[#5E488C] hover:bg-[#4D3974] text-white flex items-center gap-2 shadow-lg glow-purple transition-all"
+                onClick={() => setQty(q => Math.max(1, q - 1))}
+                className="w-8 h-8 rounded-lg bg-[#1E2433] hover:bg-[#2A3449] flex items-center justify-center font-bold text-sm cursor-pointer"
               >
-                <span>{added ? '✅ Adicionado!' : '🛒 Adicionar ao Carrinho'}</span>
+                -
+              </button>
+              <span className="font-mono text-sm font-bold w-6 text-center">{qty}</span>
+              <button
+                type="button"
+                onClick={() => setQty(q => q + 1)}
+                className="w-8 h-8 rounded-lg bg-[#1E2433] hover:bg-[#2A3449] flex items-center justify-center font-bold text-sm cursor-pointer"
+              >
+                +
               </button>
             </div>
           </div>
+
+          {/* Observações / Notas do Cliente */}
+          {!isTcgItem && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#A3A3A3] mb-2">
+                Instruções ou Detalhes Especiais (Opcional)
+              </label>
+              <textarea
+                value={observations}
+                onChange={e => setObservations(e.target.value)}
+                placeholder="Ex: Prefiro base em tom preto fosco, escala personalizada, urgência para presente..."
+                rows={2}
+                className="w-full bg-[#131722] border border-[#2E384D] focus:border-[#7C3AED] rounded-xl p-3 text-xs text-white placeholder-[#64748B] outline-none transition-colors"
+              />
+            </div>
+          )}
+
         </div>
+
+        {/* Footer Actions */}
+        <div className="p-4 sm:p-6 bg-[#0B0D13] border-t border-[#1E2433] flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold tracking-wider text-[#94A3B8] uppercase">
+              Subtotal da Peça
+            </span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xs font-black text-[#38BDF8]">R$</span>
+              <span className="font-display text-3xl sm:text-4xl text-white tracking-tight leading-none">
+                {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={isOutOfStock}
+            onClick={handleConfirm}
+            className={`h-12 px-7 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-lg ${
+              isOutOfStock 
+                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+                : 'bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white shadow-purple-950/50 ring-1 ring-purple-400/40'
+            }`}
+          >
+            <span>{isOutOfStock ? 'Versão Esgotada' : 'Adicionar à Sacola'}</span>
+            {!isOutOfStock && <span>→</span>}
+          </button>
+        </div>
+
       </div>
     </div>
   );

@@ -1,144 +1,160 @@
-import React from 'react';
-import { ModelViewer3D } from './ModelViewer3D';
+import type { Product } from '@/data/products';
+import { HeroShowcaseSlider } from './HeroShowcaseSlider';
+import { ContactForgeBanner } from './ContactForgeBanner';
 
 interface Props {
   onOrcamento: () => void;
-  onExploreCatalog: () => void;
-  onHowItWorks: () => void;
+  featuredProduct?: Product | null;
+  products?: Product[];
+  onConfigure?: (p: Product) => void;
+  onOpenWorkshopModal?: () => void;
 }
 
-export function Hero({ onOrcamento, onExploreCatalog, onHowItWorks }: Props) {
+export function Hero({ onOrcamento, featuredProduct, products = [], onConfigure, onOpenWorkshopModal }: Props) {
   return (
-    <section className="relative overflow-hidden pt-8 pb-14 md:pt-14 md:pb-20 px-4 md:px-8 border-b border-[#1A2336]/60 tech-grid">
-      {/* Dynamic Background Glows */}
-      <div
-        className="pointer-events-none absolute -top-40 left-1/4 w-[600px] h-[600px] rounded-full blur-[140px] opacity-25"
-        style={{ background: 'radial-gradient(circle, #5E488C 0%, transparent 70%)' }}
-      />
-      <div
-        className="pointer-events-none absolute top-10 right-10 w-[500px] h-[500px] rounded-full blur-[150px] opacity-20"
-        style={{ background: 'radial-gradient(circle, #4CA8B8 0%, transparent 70%)' }}
-      />
+    <section id="destaques" className="relative overflow-hidden bg-[#0B0D13] text-white pt-10 pb-16 md:py-20 px-4 md:px-8 border-b border-[#1E2433]">
+      {/* Background ambient lighting (Purple & Cyan Glow) */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[130px] pointer-events-none" />
 
-      <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
-        {/* Left Column: Headlines & CTA (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col items-start">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold mb-4 bg-purple-950/60 border border-purple-500/40 text-purple-300 backdrop-blur-md glow-purple">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            <span>Impressão 3D de Precisão • Pinhalzinho-SP</span>
+      <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        
+        {/* Left Editorial Content */}
+        <div className="lg:col-span-7 flex flex-col justify-center">
+          {/* Subtitle tag */}
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-8 h-[2px] bg-gradient-to-r from-[#7C3AED] to-[#38BDF8]" />
+            <span className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#38BDF8] uppercase">
+              IMPRESSÃO 3D PERSONALIZADA • PINHALZINHO-SP
+            </span>
           </div>
 
-          {/* Slogan & Title */}
-          <h1 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1] mb-4">
-            Onde a imaginação{' '}
-            <span className="bg-gradient-to-r from-[#4CA8B8] via-[#7E63B8] to-purple-400 bg-clip-text text-transparent">
-              vira realidade
-            </span>{' '}
-            em 3D.
+          {/* Main Huge Headline com "REALIDADE" destacado no degradê roxo/ciano */}
+          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-wide text-white uppercase mb-6 flex flex-col gap-1 sm:gap-2 leading-[0.92]">
+            <span className="block">ONDE A IMAGINAÇÃO</span>
+            <span className="block bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#38BDF8] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(124,58,237,0.35)]">
+              VIRA REALIDADE.
+            </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed mb-6">
-            Fabricação sob demanda em <strong>PLA</strong>, <strong>PETG Técnico</strong> e{' '}
-            <strong>Resina 8K Ultra-Detalhe</strong>. Do arquivo digital à peça física com acabamento
-            profissional e envio para todo o Brasil.
+          {/* Paragraph */}
+          <p className="text-sm md:text-base text-[#94A3B8] max-w-lg mb-8 leading-relaxed font-normal">
+            Peças impressas sob encomenda, colecionáveis exclusivos e projetos personalizados. Traga sua ideia ou arquivo para a bancada.
           </p>
 
-          {/* Highlights Pills */}
-          <div className="flex flex-wrap gap-2.5 mb-8">
-            {[
-              '⚙️ Orçamento 3D em Segundos',
-              '🎨 Pintura & Acabamento Manual',
-              '📍 Sede em Pinhalzinho-SP',
-              '🚀 Retirada Local ou Envio Seguro',
-            ].map((pill) => (
-              <span
-                key={pill}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#111726]/80 text-slate-300 border border-[#222D42] backdrop-blur-sm"
-              >
-                {pill}
-              </span>
-            ))}
-          </div>
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-14">
+            <a
+              href="#catalogo"
+              className="h-12 px-7 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white shadow-lg shadow-purple-950/50 hover:shadow-purple-700/40 active:scale-95 cursor-pointer ring-1 ring-purple-400/40"
+            >
+              <span>Explorar a coleção</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3.5 w-full sm:w-auto">
             <button
-              type="button"
               onClick={onOrcamento}
-              className="h-12 px-7 rounded-xl font-black text-sm uppercase tracking-wide bg-[#5E488C] hover:bg-[#4D3974] text-white flex items-center justify-center gap-2.5 shadow-xl glow-purple transition-all transform hover:-translate-y-0.5"
+              className="h-12 px-6 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all bg-[#131722] hover:bg-[#1E2433] text-white border border-[#2E384D] hover:border-[#38BDF8] cursor-pointer shadow-md"
             >
-              <span>📐</span>
-              <span>Fazer Orçamento Instantâneo</span>
+              <span className="text-[#38BDF8]">📐</span>
+              <span>Solicitar Orçamento</span>
             </button>
 
-            <button
-              type="button"
-              onClick={onExploreCatalog}
-              className="h-12 px-6 rounded-xl font-bold text-sm bg-[#131B2D] hover:bg-[#1B253D] text-slate-200 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 flex items-center justify-center gap-2 transition-all"
-            >
-              <span>📦</span>
-              <span>Explorar Catálogo</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onHowItWorks}
-              className="h-12 px-4 rounded-xl text-xs font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <span>❓ Como Funciona</span>
-            </button>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3 gap-6 pt-8 mt-8 border-t border-[#1E2638] w-full max-w-lg">
-            <div>
-              <div className="text-xl sm:text-2xl font-black text-white">0.05<span className="text-cyan-400 text-sm">mm</span></div>
-              <div className="text-[11px] text-slate-400 font-medium">Resolução Máxima</div>
-            </div>
-            <div>
-              <div className="text-xl sm:text-2xl font-black text-white">100<span className="text-purple-400 text-sm">%</span></div>
-              <div className="text-[11px] text-slate-400 font-medium">Personalizável</div>
-            </div>
-            <div>
-              <div className="text-xl sm:text-2xl font-black text-white">24<span className="text-cyan-400 text-sm">h</span></div>
-              <div className="text-[11px] text-slate-400 font-medium">Retorno Ágil</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 3D Interactive Showroom Widget (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col items-center">
-          <div className="w-full relative rounded-3xl overflow-hidden glass-panel border border-cyan-500/20 p-2 shadow-2xl">
-            {/* Top Interactive Indicator */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-[#222D42] text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-bold text-white">Visualizador 3D Interativo</span>
-              </div>
-              <span className="text-[11px] text-cyan-300 font-mono">Three.js WebGL</span>
-            </div>
-
-            {/* 3D Model Canvas */}
-            <div className="h-[320px] sm:h-[380px] w-full rounded-2xl overflow-hidden relative">
-              <ModelViewer3D file={null} materialColor="#5E488C" />
-            </div>
-
-            {/* Bottom Quick Callout */}
-            <div className="p-3 bg-[#0E131F]/90 rounded-b-2xl flex items-center justify-between text-xs">
-              <span className="text-slate-400 text-[11px]">
-                💡 Teste a rotação 3D com o mouse ou toque
-              </span>
+            {onOpenWorkshopModal && (
               <button
-                type="button"
-                onClick={onOrcamento}
-                className="text-[11px] font-bold text-cyan-300 hover:underline flex items-center gap-1"
+                onClick={onOpenWorkshopModal}
+                className="h-12 px-5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all bg-[#131722] hover:bg-[#1E2433] text-slate-200 hover:text-white border border-[#2E384D] hover:border-purple-500/60 cursor-pointer shadow-md"
+                title="Ver bastidores do laboratório ImagineLab"
               >
-                Enviar meu STL →
+                <span className="text-[#38BDF8]">▶</span>
+                <span>Como Funciona</span>
               </button>
+            )}
+          </div>
+
+          {/* Metrics row */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-6 border-t border-[#1E2433] max-w-xl lg:max-w-2xl">
+            <a
+              href="#catalogo"
+              className="group rounded-xl p-2 -m-2 transition-all cursor-pointer hover:border-purple-500/40 hover:bg-purple-950/20 border border-transparent block"
+              title="Explorar peças entregues no catálogo"
+            >
+              <div className="font-display text-3xl md:text-4xl text-white group-hover:text-[#38BDF8] transition-colors">
+                100+
+              </div>
+              <div className="text-[11px] text-[#64748B] group-hover:text-slate-300 transition-colors mt-0.5">
+                projetos impressos
+              </div>
+            </a>
+
+            <a
+              href="#avaliacoes"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('avaliacoes');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="group rounded-xl p-2 -m-2 transition-all cursor-pointer hover:border-purple-500/40 hover:bg-purple-950/20 border border-transparent block"
+              title="Ver depoimentos e avaliações de colecionadores"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                <span className="font-display text-3xl md:text-4xl text-white group-hover:text-[#38BDF8] transition-colors flex items-center gap-1">
+                  4,9 <span className="text-[#38BDF8] text-xl leading-none group-hover:scale-110 transition-transform">★</span>
+                </span>
+                <span className="text-[10px] font-bold text-cyan-400 bg-cyan-950/70 border border-cyan-500/40 px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm group-hover:border-cyan-400 group-hover:bg-cyan-900/90 transition-all inline-flex items-center gap-0.5 self-start sm:self-auto">
+                  <span>Avaliações</span>
+                  <span className="text-[11px] leading-none">↓</span>
+                </span>
+              </div>
+              <div className="text-[11px] text-[#64748B] group-hover:text-slate-300 transition-colors mt-0.5">
+                avaliação média
+              </div>
+            </a>
+
+            <div
+              onClick={onOpenWorkshopModal}
+              className={`group rounded-xl p-2 -m-2 transition-all ${
+                onOpenWorkshopModal
+                  ? 'cursor-pointer hover:border-purple-500/40 hover:bg-purple-950/20 border border-transparent'
+                  : ''
+              }`}
+              title="Conheça o processo da ImagineLab"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                <span className="font-display text-3xl md:text-4xl text-white group-hover:text-[#38BDF8] transition-colors">
+                  100%
+                </span>
+                {onOpenWorkshopModal && (
+                  <span className="text-[10px] font-bold text-purple-300 bg-purple-950/70 border border-purple-500/40 px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm group-hover:border-purple-400 group-hover:bg-purple-900/90 transition-all inline-flex items-center gap-0.5 self-start sm:self-auto">
+                    <span>Bastidores</span>
+                    <span className="text-[9px] leading-none">▶</span>
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-[#64748B] group-hover:text-slate-300 transition-colors mt-0.5">
+                acabamento artesanal
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Right Studio Showcase Card */}
+        <div className="lg:col-span-5 relative flex flex-col items-center">
+          <HeroShowcaseSlider
+            featuredProduct={featuredProduct}
+            products={products}
+            onConfigure={onConfigure}
+          />
+          <ContactForgeBanner />
+
+          {/* Right vertical text */}
+          <div className="hidden xl:flex absolute -right-10 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[10px] tracking-[0.3em] font-semibold text-[#475569] uppercase pointer-events-none">
+            IMAGINELAB • 3D STUDIO • PINHALZINHO-SP
+          </div>
+        </div>
+
       </div>
     </section>
   );

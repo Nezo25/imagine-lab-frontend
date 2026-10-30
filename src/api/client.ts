@@ -1,13 +1,15 @@
-// Client de API para conexão com backend ImagineLab (reaproveitado da arquitetura Forja/Chico)
-// Suporta multi-instance na VPS com chave dinâmica no localStorage e fallback configurável
-
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('imaginelab_api_url') || localStorage.getItem('forja_api_url');
-    if (saved) return saved.replace(/\/+$/, '');
-  }
-  const root = import.meta.env.VITE_API_URL || 'https://forja-backend-1.onrender.com';
-  return `${root.replace(/\/+$/, '')}/api/v1`;
+  const custom = typeof window !== 'undefined'
+    ? (localStorage.getItem('imaginelab_api_url') || localStorage.getItem('forja_api_url'))
+    : null;
+  
+  const root = custom || 
+    (typeof import.meta !== 'undefined' && (import.meta.env.VITE_API_URL || (import.meta.env as any).NEXT_PUBLIC_API_URL)) ||
+    'https://api.imaginelab.seudominio.com.br';
+
+  const clean = root.trim().replace(/\/+$/, '');
+  if (clean.endsWith('/api/v1')) return clean;
+  return `${clean}/api/v1`;
 };
 
 export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -16,9 +18,9 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
   const url = `${baseUrl}${path}`;
 
   const token = typeof window !== 'undefined' ? sessionStorage.getItem('__adm_token') : null;
-
+  
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s para cold-start da VPS/Render
+  const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 segundos
 
   try {
     const response = await fetch(url, {
@@ -52,11 +54,11 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
     }
 
     const text = await response.text();
-    return text ? JSON.parse(text) : ({} as T);
+    return text ? JSON.parse(text) : {} as T;
   } catch (error: any) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('A requisição demorou muito e foi cancelada (Timeout de 60s).');
+      throw new Error('Tempo limite de conexão esgotado. Verifique sua conexão com a internet.');
     }
     throw error;
   }
