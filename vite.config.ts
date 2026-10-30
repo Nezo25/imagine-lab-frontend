@@ -2,9 +2,18 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import fs from 'node:fs'
 
-import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
-
+// Carregamento resiliente da configuração do Figma Make (evita crash em CI/CD como Vercel)
+let siteConfiguration: any = null
+try {
+  const siteJsonPath = path.resolve(import.meta.dirname, './.figma/make/site.json')
+  if (fs.existsSync(siteJsonPath)) {
+    siteConfiguration = JSON.parse(fs.readFileSync(siteJsonPath, 'utf-8'))
+  }
+} catch {
+  // Ignorado em ambientes de build externos (Vercel, Netlify, Docker)
+}
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -18,9 +27,9 @@ export default defineConfig(({ mode }) => {
       minify: !emitSourcemaps,
     },
     plugins: [
-react(),
+      react(),
       tailwindcss(),
-      figmaSiteConfiguration(siteConfiguration),
+      ...(siteConfiguration ? [figmaSiteConfiguration(siteConfiguration)] : []),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
@@ -86,7 +95,7 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
     return html.replace(`<!-- ${slotName} -->`, content)
   }
 
-  const title = config.title ?? "Figma Make App"
+  const title = config.title ?? "ImagineLab — Onde a imaginação vira realidade em 3D"
   const description = config.description ?? ''
   const favicon = config.icons?.icon ?? ''
   const socialImage = config.openGraph?.image ?? ''
