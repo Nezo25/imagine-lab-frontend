@@ -64,7 +64,77 @@ export const FINISH_OPTIONS: FinishOption[] = [
   { label: 'Pintado à Mão',   extra: 85 },
 ];
 
-export const products: Product[] = [];
+export const products: Product[] = [
+  {
+    id: 'link-yarn-zelda',
+    name: 'Link Yarn Hero — The Legend of Zelda',
+    department: 'PRINT_3D',
+    category: 'Chibis / Miniaturas',
+    universe: 'POP_CULTURE_GEEK',
+    types: ['Planta'],
+    scales: ['Mini (5 cm)', 'Padrão (10 cm)', 'Grande (20 cm)', 'Escala 1:10 (~15 cm)'],
+    materials: ['PLA', 'Resina'],
+    basePrice: 119.90,
+    finishOptions: FINISH_OPTIONS,
+    image: '/images/products/link-yarn-zelda.png',
+    printTimeH: 8.5,
+    filamentG: 140,
+    active: true,
+    featured: true
+  },
+  {
+    id: 'witcher-wolf-crest',
+    name: 'Brasão Cabeça de Lobo — The Witcher',
+    department: 'PRINT_3D',
+    category: 'Acessórios Geek 3D',
+    universe: 'POP_CULTURE_GEEK',
+    types: ['Metálico'],
+    scales: ['Padrão (10 cm)', 'Grande (20 cm)', 'Escala 1:1 (Real)'],
+    materials: ['PLA', 'Resina'],
+    basePrice: 149.90,
+    finishOptions: FINISH_OPTIONS,
+    image: '/images/products/witcher-wolf-crest.jpg',
+    printTimeH: 12.0,
+    filamentG: 220,
+    active: true,
+    featured: true
+  },
+  {
+    id: 'grogu-baby-yoda-yarn',
+    name: 'Baby Yoda Grogu — Star Wars The Mandalorian',
+    department: 'PRINT_3D',
+    category: 'Chibis / Miniaturas',
+    universe: 'POP_CULTURE_GEEK',
+    types: ['Psíquico'],
+    scales: ['Mini (5 cm)', 'Padrão (10 cm)', 'Grande (20 cm)', 'Escala 1:10 (~15 cm)'],
+    materials: ['PLA', 'Resina'],
+    basePrice: 129.90,
+    finishOptions: FINISH_OPTIONS,
+    image: '/images/products/grogu-baby-yoda-yarn.png',
+    printTimeH: 9.0,
+    filamentG: 160,
+    active: true,
+    featured: true
+  },
+  {
+    id: 'super-mario-mushroom-lamp',
+    name: 'Luminária Pendente Cogumelo — Super Mario',
+    department: 'PRINT_3D',
+    category: 'Dioramas e Cenários',
+    universe: 'DIORAMA_ACCESSORY',
+    types: ['Fogo'],
+    scales: ['Padrão (10 cm)', 'Grande (20 cm)'],
+    materials: ['PLA'],
+    basePrice: 179.90,
+    promoPrice: 159.90,
+    finishOptions: FINISH_OPTIONS,
+    image: '/images/products/super-mario-mushroom-lamp.png',
+    printTimeH: 14.0,
+    filamentG: 280,
+    active: true,
+    featured: true
+  }
+];
 
 
 export const TYPE_COLORS: Record<PokemonType, { text: string; bg: string; border?: string }> = {

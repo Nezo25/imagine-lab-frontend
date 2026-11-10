@@ -5,7 +5,7 @@ const getBaseUrl = () => {
   
   const root = custom || 
     (typeof import.meta !== 'undefined' && (import.meta.env.VITE_API_URL || (import.meta.env as any).NEXT_PUBLIC_API_URL)) ||
-    'https://api.imaginelab.seudominio.com.br';
+    'https://srv2072247.hstgr.cloud/api/v1';
 
   const clean = root.trim().replace(/\/+$/, '');
   if (clean.endsWith('/api/v1')) return clean;
