@@ -20,7 +20,6 @@ export default function AdminLogin() {
       (cleanEmail === 'admin@imaginelab.com' ||
        cleanEmail === 'contato@imaginelab.com' ||
        cleanEmail === 'admin@imaginelab.3d' ||
-       cleanEmail === 'admin@forja.com' ||
        cleanEmail === 'admin') &&
       (password === 'admin123' || password === 'admin')
     );
