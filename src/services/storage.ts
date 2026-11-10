@@ -214,7 +214,20 @@ export function isFakeMockProduct(p: any): boolean {
   const idStr = String(p.id || '');
   if (/^p\d+$/.test(idStr)) return true; // p1, p2, p3...
   const nameLower = p.name.trim().toLowerCase();
-  const fakeNames = [
+  
+  // Produtos pertencentes à Forja do Chico que não devem vazar para a ImagineLab
+  const forjaChicoProducts = [
+    'zorua',
+    'tepig',
+    'fennekin',
+    'mimikyu',
+    'scorbunny',
+    'litten',
+    'fuecoco',
+    'placa decorativa 3d berserk',
+    'placa decorativa 3d demon slayer',
+    'berserk',
+    'demon slayer',
     'charizard stance',
     'gengar sorridente',
     'gyarados emergindo',
@@ -227,7 +240,8 @@ export function isFakeMockProduct(p: any): boolean {
     'dialga lendário',
     'dialga lendario'
   ];
-  if (fakeNames.includes(nameLower)) return true;
+  if (forjaChicoProducts.some(name => nameLower.includes(name))) return true;
+  if (p.category === 'TCG' || p.category === 'FIGURE_POKEMON' || p.category === 'Figures Pokémon') return true;
   return false;
 }
 
@@ -239,7 +253,9 @@ export function getStoredProducts(): Product[] {
       if (Array.isArray(parsed) && parsed.length > 0) {
         const clean = parsed.filter(p => !isFakeMockProduct(p));
         if (clean.length > 0) {
-          return consolidateProducts(clean.map(sanitizeProduct));
+          // Garante que os produtos oficiais da ImagineLab estão presentes
+          const merged = [...products, ...clean];
+          return consolidateProducts(merged.map(sanitizeProduct));
         }
       }
     }
@@ -280,7 +296,7 @@ export async function fetchRemoteProducts(maxAttempts = 5): Promise<Product[]> {
   const executeFetch = async (): Promise<Product[]> => {
     let allProducts: Product[] = [];
 
-    // Fetch 3D Models reais cadastrados na oficina
+    // Fetch 3D Models reais cadastrados na oficina para ImagineLab
     try {
       const data3d: any = await fetchApi('/models?size=100');
       const items3d = data3d?.content || (Array.isArray(data3d) ? data3d : []);
@@ -291,38 +307,10 @@ export async function fetchRemoteProducts(maxAttempts = 5): Promise<Product[]> {
       console.warn('Tentativa na API de modelos:', err);
     }
 
-    // Fetch TCG Products reais cadastrados na oficina
-    try {
-      const isAdmin = Boolean(typeof window !== 'undefined' && sessionStorage.getItem('__adm_token'));
-      const tcgEndpoint = isAdmin ? '/admin/tcg-products?size=100' : '/tcg-products?size=100';
-      const dataTcg: any = await fetchApi(tcgEndpoint);
-      const itemsTcg = dataTcg?.content || (Array.isArray(dataTcg) ? dataTcg : []);
-      if (Array.isArray(itemsTcg) && itemsTcg.length > 0) {
-        const mappedTcg = itemsTcg.map((tcg: any) => ({
-          id: tcg.id.toString(),
-          name: tcg.name,
-          category: 'TCG',
-          types: [],
-          scales: [tcg.itemType],
-          materials: [tcg.language],
-          basePrice: tcg.price,
-          finishOptions: [],
-          image: tcg.imageUrl || 'https://placehold.co/600x700/1F2937/F97316?text=TCG',
-          printTimeH: 0,
-          filamentG: 0,
-          active: tcg.isActive,
-          featured: false,
-          expansionName: tcg.expansionName,
-          stock: tcg.stockQuantity || 1,
-          department: 'TCG'
-        } as any));
-        allProducts = [...allProducts, ...mappedTcg];
-      }
-    } catch (err) {
-      console.warn('Tentativa na API de TCG:', err);
-    }
-
-    return allProducts.filter(p => !isFakeMockProduct(p));
+    const validFetched = allProducts.filter(p => !isFakeMockProduct(p));
+    // Garante que o catálogo oficial da ImagineLab está presente
+    const merged = [...products, ...validFetched];
+    return consolidateProducts(merged.map(sanitizeProduct));
   };
 
   const delays = [2500, 3500, 5000, 6000, 8000];
