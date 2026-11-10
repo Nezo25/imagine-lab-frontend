@@ -19,7 +19,7 @@ export interface ReviewSubmitPayload {
   customerCity?: string;
 }
 
-const STORAGE_KEY = 'forja_reviews_v1';
+const STORAGE_KEY = 'imaginelab_reviews_v1';
 
 export const DEFAULT_SAMPLE_REVIEWS: CustomerReview[] = [
   {
@@ -78,7 +78,7 @@ export function getStoredReviews(): CustomerReview[] {
 export function saveStoredReviews(reviews: CustomerReview[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
-    window.dispatchEvent(new Event('forja_reviews_updated'));
+    window.dispatchEvent(new Event('imaginelab_reviews_updated'));
   } catch (e) {}
 }
 

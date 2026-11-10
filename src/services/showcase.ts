@@ -72,7 +72,7 @@ export interface ShowcaseSlotUpdateRequest {
   mysteryWhatsappText?: string | null;
 }
 
-const LOCAL_STORAGE_SHOWCASE_KEY = 'forja_showcase_slots_cache_v2';
+const LOCAL_STORAGE_SHOWCASE_KEY = 'imaginelab_showcase_slots_cache_v2';
 
 /** Retorna vitrine pública montada exclusivamente a partir de produtos reais cadastrados */
 export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicShowcaseResponse {
@@ -169,7 +169,7 @@ export async function fetchPublicShowcase(catalog?: Product[]): Promise<PublicSh
   }
 }
 
-const ADMIN_SHOWCASE_CACHE_KEY = 'forja_showcase_admin_cache_v1';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_cache_v1';
 
 /** Busca os dados completos de administração dos slots com persistência real */
 export async function fetchAdminShowcase(catalog?: Product[]): Promise<AdminShowcaseSlot[]> {
@@ -250,13 +250,13 @@ export async function updateShowcaseSlot(
     });
 
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('forja_showcase_updated'));
+      window.dispatchEvent(new Event('imaginelab_showcase_updated'));
     }
     return result;
   } catch (err) {
     console.warn(`API remota indisponível, alteração do slot ${slotNumber} salva localmente:`, err);
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('forja_showcase_updated'));
+      window.dispatchEvent(new Event('imaginelab_showcase_updated'));
     }
     return { slotNumber, ...request } as AdminShowcaseSlot;
   }

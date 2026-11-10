@@ -64,8 +64,8 @@ export function KanbanBoard() {
     const handleUpdate = () => {
       fetchKanban();
     };
-    window.addEventListener('forja_orders_updated', handleUpdate);
-    return () => window.removeEventListener('forja_orders_updated', handleUpdate);
+    window.addEventListener('imaginelab_orders_updated', handleUpdate);
+    return () => window.removeEventListener('imaginelab_orders_updated', handleUpdate);
   }, []);
 
   const filteredBoard = useMemo(() => {

@@ -7,7 +7,7 @@ export function StoreSettings() {
   const [pingData, setPingData] = useState<{ status: 'loading' | 'ok' | 'error', latency?: number }>({ status: 'loading' });
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('forja_theme') || 'dark';
+    const savedTheme = localStorage.getItem('imaginelab_theme') || 'dark';
     if (savedTheme === 'light') {
       document.documentElement.classList.add('light');
       setTheme('light');
@@ -23,7 +23,7 @@ export function StoreSettings() {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('forja_theme', newTheme);
+    localStorage.setItem('imaginelab_theme', newTheme);
     if (newTheme === 'light') {
       document.documentElement.classList.add('light');
     } else {

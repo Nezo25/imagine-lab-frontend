@@ -30,7 +30,10 @@ export default function AdminLogin() {
       const rootUrl = cleanApi.endsWith('/api/v1') ? cleanApi.replace(/\/api\/v1$/, '') : cleanApi;
       const res = await fetch(`${rootUrl}/api/v1/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Id': 'imaginelab'
+        },
         body: JSON.stringify({ email: cleanEmail, password }),
       });
 

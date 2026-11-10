@@ -37,7 +37,7 @@ export interface CouponValidationResult {
   message: string;
 }
 
-const LOCAL_STORAGE_COUPONS = 'forja_admin_coupons_cache';
+const LOCAL_STORAGE_COUPONS = 'imaginelab_admin_coupons_cache';
 
 const DEFAULT_COUPONS: Coupon[] = [
   {

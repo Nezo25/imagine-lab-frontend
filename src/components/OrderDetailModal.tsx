@@ -10,7 +10,7 @@ interface OrderDetailModalProps {
 
 export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   const [internalNotes, setInternalNotes] = useState(
-    order.internalNotes || localStorage.getItem(`forja_notes_${order.id}`) || ''
+    order.internalNotes || localStorage.getItem(`imaginelab_notes_${order.id}`) || ''
   );
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
@@ -41,7 +41,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
     setSavingNotes(true);
     try {
       localStorage.setItem(`imaginelab_notes_${order.id}`, internalNotes);
-      localStorage.setItem(`forja_notes_${order.id}`, internalNotes);
+      localStorage.setItem(`imaginelab_notes_${order.id}`, internalNotes);
       await fetchApi(`/admin/orders/${order.id}/internal-notes`, {
         method: 'PATCH',
         body: JSON.stringify({ internalNotes })
@@ -63,7 +63,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
     try {
       await fetchApi(`/admin/orders/${order.id}`, { method: 'DELETE' });
       toast.show({ title: 'Sucesso', message: `OS ${order.shortCode} excluída.`, type: 'success' });
-      window.dispatchEvent(new Event('forja_orders_updated'));
+      window.dispatchEvent(new Event('imaginelab_orders_updated'));
       onClose();
     } catch (e: any) {
       toast.show({ title: 'Erro', message: e.message || 'Falha ao excluir.', type: 'error' });
@@ -85,7 +85,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
         message: `OS ${order.shortCode} movida para Cancelados.`, 
         type: 'info' 
       });
-      window.dispatchEvent(new Event('forja_orders_updated'));
+      window.dispatchEvent(new Event('imaginelab_orders_updated'));
       onClose();
     } catch (e: any) {
       toast.show({ title: 'Erro', message: e.message || 'Falha ao rejeitar.', type: 'error' });
@@ -105,7 +105,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
         type: 'success',
         icon: '⚙️'
       });
-      window.dispatchEvent(new Event('forja_orders_updated'));
+      window.dispatchEvent(new Event('imaginelab_orders_updated'));
       onClose();
     } catch (e: any) {
       toast.show({ title: 'Erro', message: e.message || 'Falha ao aprovar pedido.', type: 'error' });

@@ -27,9 +27,9 @@ export function ReviewsSection({ onOpenSubmitReview }: Props) {
       loadReviews();
     };
 
-    window.addEventListener('forja_reviews_updated', handleUpdate);
+    window.addEventListener('imaginelab_reviews_updated', handleUpdate);
     return () => {
-      window.removeEventListener('forja_reviews_updated', handleUpdate);
+      window.removeEventListener('imaginelab_reviews_updated', handleUpdate);
     };
   }, []);
 

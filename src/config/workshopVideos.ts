@@ -44,7 +44,7 @@ export const DEFAULT_WORKSHOP_VIDEOS: WorkshopStageVideo[] = [
   }
 ];
 
-const STORAGE_KEY = 'forja_workshop_videos_v1';
+const STORAGE_KEY = 'imaginelab_workshop_videos_v1';
 
 export function normalizeWorkshopVideos(videos?: WorkshopStageVideo[] | null): WorkshopStageVideo[] {
   if (!Array.isArray(videos) || videos.length === 0) {
@@ -105,7 +105,7 @@ export function saveStoredWorkshopVideos(videos: WorkshopStageVideo[]): Workshop
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-      window.dispatchEvent(new CustomEvent('forja-workshop-videos-updated', { detail: normalized }));
+      window.dispatchEvent(new CustomEvent('imaginelab-workshop-videos-updated', { detail: normalized }));
     } catch {
       // Ignore storage quota errors
     }

@@ -1,6 +1,6 @@
 const getBaseUrl = () => {
   const custom = typeof window !== 'undefined'
-    ? (localStorage.getItem('imaginelab_api_url') || localStorage.getItem('forja_api_url'))
+    ? (localStorage.getItem('imaginelab_api_url') || localStorage.getItem('imaginelab_api_url'))
     : null;
   
   const root = custom || 
@@ -28,6 +28,7 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
       signal: options?.signal || controller.signal,
       headers: {
         'Content-Type': 'application/json',
+        'X-Tenant-Id': 'imaginelab',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options?.headers,
       },

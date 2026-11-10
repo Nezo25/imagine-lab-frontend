@@ -49,10 +49,10 @@ export function WorkshopVideoPlayer({ stages }: WorkshopVideoPlayerProps) {
       }
     };
 
-    window.addEventListener('forja-workshop-videos-updated', handleStorageUpdate);
+    window.addEventListener('imaginelab-workshop-videos-updated', handleStorageUpdate);
     return () => {
       mounted = false;
-      window.removeEventListener('forja-workshop-videos-updated', handleStorageUpdate);
+      window.removeEventListener('imaginelab-workshop-videos-updated', handleStorageUpdate);
     };
   }, [stages]);
 

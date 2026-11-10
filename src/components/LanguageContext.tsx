@@ -35,13 +35,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [language, setLanguageState] = useState<LangMode>('PT');
 
   useEffect(() => {
-    const saved = localStorage.getItem('forja_language') as LangMode;
+    const saved = localStorage.getItem('imaginelab_language') as LangMode;
     if (saved) setLanguageState(saved);
   }, []);
 
   const setLanguage = (lang: LangMode) => {
     setLanguageState(lang);
-    localStorage.setItem('forja_language', lang);
+    localStorage.setItem('imaginelab_language', lang);
   };
 
   const translateType = (type: string) => {

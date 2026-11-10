@@ -109,7 +109,7 @@ function Input({ ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
 
 // ------------------- MODAL: CONFIGURAÇÃO DE CONEXÃO COM O BANCO -------------------
 function ApiConfigModal({ onClose }: { onClose: () => void }) {
-  const currentUrl = localStorage.getItem('imaginelab_api_url') || localStorage.getItem('forja_api_url') || import.meta.env.VITE_API_URL || (import.meta.env as any).NEXT_PUBLIC_API_URL || 'https://api.imaginelab.seudominio.com.br/api/v1';
+  const currentUrl = localStorage.getItem('imaginelab_api_url') || localStorage.getItem('imaginelab_api_url') || import.meta.env.VITE_API_URL || (import.meta.env as any).NEXT_PUBLIC_API_URL || 'https://api.imaginelab.seudominio.com.br/api/v1';
   const [url, setUrl] = useState(currentUrl);
   const [testing, setTesting] = useState(false);
   const [statusResult, setStatusResult] = useState<string | null>(null);
@@ -138,7 +138,7 @@ function ApiConfigModal({ onClose }: { onClose: () => void }) {
 
   function handleSave() {
     localStorage.setItem('imaginelab_api_url', url.trim());
-    localStorage.setItem('forja_api_url', url.trim());
+    localStorage.setItem('imaginelab_api_url', url.trim());
     toast.show({
       title: 'URL da API atualizada!',
       message: 'A nova URL será utilizada para todas as chamadas ao banco.',
@@ -926,16 +926,16 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
       setFilamentos(getStoredFilaments());
     };
 
-    window.addEventListener('forja_products_updated', handleStorageUpdate);
-    window.addEventListener('forja_orders_updated', handleStorageUpdate);
-    window.addEventListener('forja_quotes_updated', handleStorageUpdate);
-    window.addEventListener('forja_filaments_updated', handleStorageUpdate);
+    window.addEventListener('imaginelab_products_updated', handleStorageUpdate);
+    window.addEventListener('imaginelab_orders_updated', handleStorageUpdate);
+    window.addEventListener('imaginelab_quotes_updated', handleStorageUpdate);
+    window.addEventListener('imaginelab_filaments_updated', handleStorageUpdate);
 
     return () => {
-      window.removeEventListener('forja_products_updated', handleStorageUpdate);
-      window.removeEventListener('forja_orders_updated', handleStorageUpdate);
-      window.removeEventListener('forja_quotes_updated', handleStorageUpdate);
-      window.removeEventListener('forja_filaments_updated', handleStorageUpdate);
+      window.removeEventListener('imaginelab_products_updated', handleStorageUpdate);
+      window.removeEventListener('imaginelab_orders_updated', handleStorageUpdate);
+      window.removeEventListener('imaginelab_quotes_updated', handleStorageUpdate);
+      window.removeEventListener('imaginelab_filaments_updated', handleStorageUpdate);
     };
   }, []);
 
@@ -1047,9 +1047,9 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
     const handleReviewUpdate = () => {
       loadAdminReviews(reviewFilter);
     };
-    window.addEventListener('forja_reviews_updated', handleReviewUpdate);
+    window.addEventListener('imaginelab_reviews_updated', handleReviewUpdate);
     return () => {
-      window.removeEventListener('forja_reviews_updated', handleReviewUpdate);
+      window.removeEventListener('imaginelab_reviews_updated', handleReviewUpdate);
     };
   }, [loadAdminReviews, reviewFilter]);
 

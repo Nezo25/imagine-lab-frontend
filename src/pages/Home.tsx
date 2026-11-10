@@ -54,10 +54,10 @@ export default function Home() {
     const handleUpdate = () => {
       if (mounted) setProducts(getStoredProducts());
     };
-    window.addEventListener('forja_products_updated', handleUpdate);
+    window.addEventListener('imaginelab_products_updated', handleUpdate);
     return () => {
       mounted = false;
-      window.removeEventListener('forja_products_updated', handleUpdate);
+      window.removeEventListener('imaginelab_products_updated', handleUpdate);
     };
   }, [loadCatalog]);
 

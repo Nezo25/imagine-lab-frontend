@@ -37,9 +37,9 @@ export function FeaturedPromotionsCarousel({
   useEffect(() => {
     loadShowcase();
     const handleUpdate = () => loadShowcase();
-    window.addEventListener('forja_showcase_updated', handleUpdate);
+    window.addEventListener('imaginelab_showcase_updated', handleUpdate);
     return () => {
-      window.removeEventListener('forja_showcase_updated', handleUpdate);
+      window.removeEventListener('imaginelab_showcase_updated', handleUpdate);
     };
   }, [loadShowcase]);
 

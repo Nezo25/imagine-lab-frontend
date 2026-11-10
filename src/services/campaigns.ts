@@ -116,7 +116,7 @@ export interface SeasonalCampaign {
   updatedAt?: string;
 }
 
-const STORAGE_KEY = 'forja_seasonal_campaigns_v1';
+const STORAGE_KEY = 'imaginelab_seasonal_campaigns_v1';
 
 function getLocalCampaigns(): SeasonalCampaign[] {
   if (typeof window === 'undefined') return [];
@@ -132,7 +132,7 @@ function saveLocalCampaigns(list: SeasonalCampaign[]): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    window.dispatchEvent(new CustomEvent('forja-campaigns-updated'));
+    window.dispatchEvent(new CustomEvent('imaginelab-campaigns-updated'));
   } catch {
     // ignore storage quota errors
   }

@@ -50,12 +50,12 @@ export interface Filament {
 }
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'forja_prod_products',
-  ORDERS: 'forja_prod_orders',
-  QUOTES: 'forja_prod_quotes',
-  FILAMENTS: 'forja_prod_filaments',
-  INITIALIZED: 'forja_prod_initialized_v4',
-  FEATURED_ID: 'forja_featured_product_id'
+  PRODUCTS: 'imaginelab_prod_products',
+  ORDERS: 'imaginelab_prod_orders',
+  QUOTES: 'imaginelab_prod_quotes',
+  FILAMENTS: 'imaginelab_prod_filaments',
+  INITIALIZED: 'imaginelab_prod_initialized_v4',
+  FEATURED_ID: 'imaginelab_featured_product_id'
 };
 
 export function getFeaturedProductId(): string | null {
@@ -255,7 +255,7 @@ export function saveProductsToStorage(productsList: Product[]): void {
     const cleanList = productsList.filter(p => !isFakeMockProduct(p));
     const consolidated = consolidateProducts(cleanList.map(sanitizeProduct));
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(consolidated));
-    window.dispatchEvent(new Event('forja_products_updated'));
+    window.dispatchEvent(new Event('imaginelab_products_updated'));
   } catch (e) {
     console.error('Erro ao salvar produtos:', e);
   }
@@ -579,7 +579,7 @@ export function getStoredFilaments(): Filament[] {
 export function saveFilamentsToStorage(filaments: Filament[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.FILAMENTS, JSON.stringify(filaments));
-    window.dispatchEvent(new Event('forja_filaments_updated'));
+    window.dispatchEvent(new Event('imaginelab_filaments_updated'));
   } catch (e) {}
 }
 
@@ -676,7 +676,7 @@ export function getStoredOrders(): Order[] {
 export function saveOrdersToStorage(orders: Order[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-    window.dispatchEvent(new Event('forja_orders_updated'));
+    window.dispatchEvent(new Event('imaginelab_orders_updated'));
   } catch (e) {}
 }
 
@@ -838,7 +838,7 @@ export function getStoredQuotes(): Quote[] {
 export function saveQuotesToStorage(quotes: Quote[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.QUOTES, JSON.stringify(quotes));
-    window.dispatchEvent(new Event('forja_quotes_updated'));
+    window.dispatchEvent(new Event('imaginelab_quotes_updated'));
   } catch (e) {}
 }
 

@@ -13,7 +13,7 @@ interface ShowcaseManagerProps {
   products: Product[];
 }
 
-const ADMIN_SHOWCASE_CACHE_KEY = 'forja_showcase_admin_cache_v1';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_cache_v1';
 
 function buildInitialSlots(products: Product[]): AdminShowcaseSlot[] {
   if (typeof window !== 'undefined') {
