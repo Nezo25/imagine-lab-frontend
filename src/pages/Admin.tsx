@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import type { Product, Category, PokemonType, ProductCategory, ProductUniverse } from '@/data/products';
 import { ALL_TYPES, ALL_CATEGORIES, ALL_SCALES, CATEGORY_LABELS, toProductCategory, UNIVERSE_CONFIG, toProductUniverse } from '@/data/products';
-import { NewTcgProductModal } from '../components/NewTcgProductModal';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { TypeBadge } from '@/components/TypeBadge';
 import { toast } from '@/components/Toast';
@@ -72,10 +71,10 @@ const NAV: { id: Section; icon: string; label: string }[] = [
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   'Em impressão':      { bg: 'rgba(234,179,8,0.15)', text: '#EAB308' },
-  'Aguardando pgto':   { bg: 'rgba(249,115,22,0.15)', text: '#F97316' },
+  'Aguardando pgto':   { bg: 'rgba(124,58,237,0.15)', text: '#A78BFA' },
   'Entregue':          { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
   'Enviado':           { bg: 'rgba(96,165,250,0.15)', text: '#60A5FA' },
-  'Aguardando análise':{ bg: 'rgba(249,115,22,0.15)', text: '#F97316' },
+  'Aguardando análise':{ bg: 'rgba(124,58,237,0.15)', text: '#A78BFA' },
   'Orçamento enviado': { bg: 'rgba(96,165,250,0.15)', text: '#60A5FA' },
   'Aprovado':          { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
   'Recusado':          { bg: 'rgba(239,68,68,0.15)', text: '#EF4444' },
@@ -101,7 +100,7 @@ function Input({ ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
       {...props}
       className="w-full h-9 px-3 rounded-lg text-sm outline-none transition-colors"
       style={{ background: '#111827', border: '1px solid #374151', color: '#F9FAFB' }}
-      onFocus={e => (e.target.style.borderColor = '#F97316')}
+      onFocus={e => (e.target.style.borderColor = '#7C3AED')}
       onBlur={e => (e.target.style.borderColor = '#374151')}
     />
   );
@@ -184,8 +183,8 @@ function ApiConfigModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={handleSave}
-              className="flex-1 h-10 rounded-lg text-xs font-bold text-white cursor-pointer"
-              style={{ background: '#F97316' }}
+              className="flex-1 h-10 rounded-lg text-xs font-bold text-white cursor-pointer shadow-md shadow-purple-950/40"
+              style={{ background: '#7C3AED' }}
             >
               💾 Salvar URL
             </button>
@@ -236,10 +235,10 @@ function OrderModal({ onClose, onSave }: { onClose: () => void; onSave: (o: Orde
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
           </div>
           <Field label="Nome do Cliente *">
-            <Input required placeholder="Ex: Ash Ketchum" value={form.cliente} onChange={e => setForm(f => ({ ...f, cliente: e.target.value }))} />
+            <Input required placeholder="Ex: Lucas Ferreira" value={form.cliente} onChange={e => setForm(f => ({ ...f, cliente: e.target.value }))} />
           </Field>
-          <Field label="Produto ou Figure *">
-            <Input required placeholder="Ex: Rayquaza Shiny 1:10" value={form.produto} onChange={e => setForm(f => ({ ...f, produto: e.target.value }))} />
+          <Field label="Produto ou Peça 3D *">
+            <Input required placeholder="Ex: Link Yarn Hero Zelda 1:10" value={form.produto} onChange={e => setForm(f => ({ ...f, produto: e.target.value }))} />
           </Field>
           <Field label="Valor da Venda (R$) *">
             <Input required placeholder="149,00" value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} />
@@ -252,8 +251,8 @@ function OrderModal({ onClose, onSave }: { onClose: () => void; onSave: (o: Orde
           <button 
             disabled={isSaving} 
             type="submit" 
-            className="w-full h-11 rounded-xl font-extrabold text-sm mt-1 transition-all flex items-center justify-center gap-2 cursor-pointer" 
-            style={{ background: '#F97316', color: '#fff' }}
+            className="w-full h-11 rounded-xl font-extrabold text-sm mt-1 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-purple-950/40 hover:opacity-90" 
+            style={{ background: '#7C3AED', color: '#fff' }}
           >
             {isSaving ? (
               <>
@@ -388,7 +387,7 @@ function EditReviewModal({
               value={form.comment}
               onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
               placeholder="Escreva ou edite o depoimento do cliente..."
-              className="w-full p-3 rounded-lg text-xs leading-relaxed outline-none resize-none bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-500 focus:border-orange-500 transition-colors"
+              className="w-full p-3 rounded-lg text-xs leading-relaxed outline-none resize-none bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-500 focus:border-purple-500 transition-colors"
             />
             <span className="text-[10px] text-gray-500 text-right block mt-0.5">
               {form.comment.length}/500 caracteres
@@ -406,8 +405,8 @@ function EditReviewModal({
             <button
               disabled={isSaving}
               type="submit"
-              className="flex-1 h-10 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-orange-950/40 flex items-center justify-center gap-1.5 cursor-pointer"
-              style={{ background: '#EA580C' }}
+              className="flex-1 h-10 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-purple-950/40 flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90"
+              style={{ background: '#7C3AED' }}
             >
               {isSaving ? 'Salvando...' : '💾 Salvar Alterações'}
             </button>
@@ -509,7 +508,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
         <form onSubmit={handleSave}>
           <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-[#111827]/95 backdrop-blur-md" style={{ borderBottom: '1px solid #374151' }}>
             <div>
-              <h2 className="font-extrabold text-lg text-gray-100">{initialData ? 'Editar Produto' : 'Nova Figure / Produto'}</h2>
+              <h2 className="font-extrabold text-lg text-gray-100">{initialData ? 'Editar Produto 3D' : 'Novo Produto 3D'}</h2>
               <p className="text-xs text-gray-400">Preencha as especificações da peça</p>
             </div>
             <button type="button" onClick={onClose} className="text-sm px-3 py-1 rounded-lg text-gray-400 hover:text-white" style={{ background: '#1F2937' }}>✕</button>
@@ -517,7 +516,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
 
           <div className="p-5 flex flex-col gap-4">
             <Field label="Nome do produto *">
-              <Input required placeholder="Ex: Figure Fuecoco 1:10" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <Input required placeholder="Ex: Link Yarn Hero Zelda 1:10" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             </Field>
 
             <div className="grid grid-cols-2 gap-3">
@@ -550,24 +549,24 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
               </Field>
             </div>
 
-            {form.category === 'FIGURE_POKEMON' && (<Field label="Tipos de Pokémon (Múltipla escolha)">
-  <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto p-2 border border-gray-700 rounded-lg bg-gray-900">
-    {ALL_TYPES.map(t => (
-      <label key={t} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-800 p-1 rounded transition-colors">
-        <input type="checkbox" className="accent-orange-500 w-3.5 h-3.5" 
-          checked={form.types.split(',').map(x=>x.trim()).includes(t)}
-          onChange={(e) => {
-            const curr = form.types.split(',').map(x=>x.trim()).filter(Boolean);
-            if (e.target.checked) curr.push(t);
-            else curr.splice(curr.indexOf(t), 1);
-            setForm(f => ({ ...f, types: curr.join(', ') }));
-          }}
-        />
-        <span className="text-[11px] text-gray-300 font-medium">{t}</span>
-      </label>
-    ))}
-  </div>
-</Field>)}
+            <Field label="Tipos / Estilo (Opcional)">
+              <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto p-2 border border-gray-700 rounded-lg bg-gray-900">
+                {ALL_TYPES.map(t => (
+                  <label key={t} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-800 p-1 rounded transition-colors">
+                    <input type="checkbox" className="accent-purple-500 w-3.5 h-3.5" 
+                      checked={form.types.split(',').map(x=>x.trim()).includes(t)}
+                      onChange={(e) => {
+                        const curr = form.types.split(',').map(x=>x.trim()).filter(Boolean);
+                        if (e.target.checked) curr.push(t);
+                        else curr.splice(curr.indexOf(t), 1);
+                        setForm(f => ({ ...f, types: curr.join(', ') }));
+                      }}
+                    />
+                    <span className="text-[11px] text-gray-300 font-medium">{t}</span>
+                  </label>
+                ))}
+              </div>
+            </Field>
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Escala">
@@ -592,7 +591,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
             </div>
 
             {form.promoPrice && parseFloat(form.promoPrice) > 0 && parseFloat(form.basePrice) > parseFloat(form.promoPrice) && (
-              <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-between text-xs text-orange-400">
+              <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-between text-xs text-purple-400">
                 <span className="font-bold">🔥 Oferta Ativa: Preço riscado de R$ {parseFloat(form.basePrice).toFixed(2)}</span>
                 <span className="font-extrabold font-mono text-emerald-400">
                   Economia de R$ {(parseFloat(form.basePrice) - parseFloat(form.promoPrice)).toFixed(2)} ({Math.round((1 - parseFloat(form.promoPrice)/parseFloat(form.basePrice))*100)}% OFF)
@@ -621,7 +620,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
                   onChange={handleFileChange} 
                   className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1F2937] file:text-[#F9FAFB] hover:file:bg-[#374151] cursor-pointer"
                 />
-                {isProcessingImage && <span className="text-xs text-orange-400 animate-pulse">Processando imagem...</span>}
+                {isProcessingImage && <span className="text-xs text-purple-400 animate-pulse">Processando imagem...</span>}
               </div>
             </Field>
 
@@ -646,29 +645,29 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
             </Field>
 
             <label className="flex items-center gap-2 cursor-pointer pt-1">
-              <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} className="w-4 h-4 rounded accent-orange-500 cursor-pointer" />
-              <span className="text-sm font-semibold text-amber-400 flex items-center gap-1.5">
+              <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} className="w-4 h-4 rounded accent-purple-500 cursor-pointer" />
+              <span className="text-sm font-semibold text-purple-400 flex items-center gap-1.5">
                 ⭐ Destacar esta peça no topo da vitrine da loja
               </span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="w-4 h-4 rounded accent-orange-500 cursor-pointer" />
+              <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="w-4 h-4 rounded accent-purple-500 cursor-pointer" />
               <span className="text-sm font-semibold text-gray-300">Produto ativo na vitrine da loja</span>
             </label>
 
             <button 
               disabled={isSaving || isProcessingImage} 
               type="submit" 
-              className="w-full h-12 rounded-xl font-extrabold text-sm mt-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-orange-950/40 hover:opacity-90 active:scale-[0.99] cursor-pointer" 
-              style={{ background: '#F97316', color: '#fff' }}
+              className="w-full h-12 rounded-xl font-extrabold text-sm mt-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-950/40 hover:opacity-90 active:scale-[0.99] cursor-pointer" 
+              style={{ background: '#7C3AED', color: '#fff' }}
             >
               {isSaving ? (
                 <>
                   <span className="animate-spin text-lg">⏳</span> Salvando no Banco de Dados...
                 </>
               ) : (
-                <>{initialData ? "Atualizar Produto" : "Salvar Produto"} 💾</>
+                <>{initialData ? "Atualizar Produto 3D" : "Salvar Produto 3D"} 💾</>
               )}
             </button>
           </div>
@@ -680,7 +679,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
 
 // ------------------- MODAL: FILAMENTO -------------------
 function FilamentModal({ onClose, onSave }: { onClose: () => void; onSave: (f: Filament) => void }) {
-  const [form, setForm] = useState({ color: '', material: 'PLA', stockG: '1000', minStockG: '300', hexCode: '#f97316' });
+  const [form, setForm] = useState({ color: '', material: 'PLA', stockG: '1000', minStockG: '300', hexCode: '#7C3AED' });
   const presetColors = [
     // Básicos
     { label: 'Preto Fosco', hex: '#18181B' },
@@ -688,22 +687,22 @@ function FilamentModal({ onClose, onSave }: { onClose: () => void; onSave: (f: F
     { label: 'Cinza Prata', hex: '#94A3B8' },
     { label: 'Grafite', hex: '#334155' },
     // Fogo & Quentes
-    { label: 'Vermelho Charizard', hex: '#DC2626' },
-    { label: 'Laranja Charmander', hex: '#F97316' },
-    { label: 'Dourado/Amarelo', hex: '#EAB308' },
+    { label: 'Vermelho Intenso', hex: '#DC2626' },
+    { label: 'Laranja Neon', hex: '#F97316' },
+    { label: 'Dourado / Ouro', hex: '#EAB308' },
     { label: 'Cobre Metálico', hex: '#B45309' },
     // Água & Frio
-    { label: 'Azul Gyarados', hex: '#2563EB' },
-    { label: 'Ciano Ártico', hex: '#06B6D4' },
-    { label: 'Azul Marinho', hex: '#1E3A8A' },
+    { label: 'Azul Cobalto', hex: '#2563EB' },
+    { label: 'Ciano Cyberpunk', hex: '#06B6D4' },
+    { label: 'Azul Profundo', hex: '#1E3A8A' },
     // Natureza
-    { label: 'Verde Bulbasaur', hex: '#16A34A' },
+    { label: 'Verde Floresta', hex: '#16A34A' },
     { label: 'Verde Oliva', hex: '#4D7C0F' },
     { label: 'Esmeralda', hex: '#059669' },
     // Especiais / Místicos
-    { label: 'Roxo Gengar', hex: '#7C3AED' },
-    { label: 'Rosa Fada', hex: '#EC4899' },
-    { label: 'Bege/Nude Primer', hex: '#D4B996' },
+    { label: 'Roxo ImagineLab', hex: '#7C3AED' },
+    { label: 'Rosa Pink', hex: '#EC4899' },
+    { label: 'Bege / Nude', hex: '#D4B996' },
     { label: 'Marrom Madeira', hex: '#78350F' }
   ];
   const [isSaving, setIsSaving] = useState(false);
@@ -753,12 +752,12 @@ function FilamentModal({ onClose, onSave }: { onClose: () => void; onSave: (f: F
             <button type="button" onClick={onClose} className="text-sm px-3 py-1 rounded-lg text-gray-400 hover:text-white" style={{ background: '#1F2937' }}>✕</button>
           </div>
           <div className="p-5 flex flex-col gap-4">
-            <Field label="Nome da Cor *"><Input required placeholder="Ex: Vermelho Charizard" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))} /></Field>
+            <Field label="Nome da Cor *"><Input required placeholder="Ex: Roxo ImagineLab" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))} /></Field>
             <Field label="Cor Visual (Hex)">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
                   <input type="color" value={form.hexCode} onChange={e => setForm(f => ({ ...f, hexCode: e.target.value }))} className="w-12 h-10 rounded cursor-pointer bg-transparent border-0 p-0" />
-                  <Input placeholder="#f97316" value={form.hexCode} onChange={e => setForm(f => ({ ...f, hexCode: e.target.value }))} className="flex-1 font-mono uppercase" />
+                  <Input placeholder="#7C3AED" value={form.hexCode} onChange={e => setForm(f => ({ ...f, hexCode: e.target.value }))} className="flex-1 font-mono uppercase" />
                 </div>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {presetColors.map(c => (
@@ -776,8 +775,8 @@ function FilamentModal({ onClose, onSave }: { onClose: () => void; onSave: (f: F
             <button 
               disabled={isSaving} 
               type="submit" 
-              className="w-full h-11 rounded-xl font-extrabold text-sm mt-1 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-950/40" 
-              style={{ background: '#F97316', color: '#fff' }}
+              className="w-full h-11 rounded-xl font-extrabold text-sm mt-1 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-950/40 hover:opacity-90" 
+              style={{ background: '#7C3AED', color: '#fff' }}
             >
               {isSaving ? (
                 <>
@@ -863,7 +862,7 @@ function QuoteModal({ quote, onClose, onSave }: { quote: Quote; onClose: () => v
           <button disabled={isProcessing} onClick={handleApproveAndZap} className="w-full h-10 rounded-xl bg-green-700 text-white font-bold hover:bg-green-600 transition-colors cursor-pointer">
             Aprovar & WhatsApp 💬
           </button>
-          <button disabled={isProcessing} onClick={handleConvertToOS} className="w-full h-10 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-500 transition-colors cursor-pointer">
+          <button disabled={isProcessing} onClick={handleConvertToOS} className="w-full h-10 rounded-xl bg-[#7C3AED] text-white font-bold hover:bg-[#6D28D9] transition-colors cursor-pointer shadow-md shadow-purple-950/40">
             Converter em OS no Kanban 📥
           </button>
         </div>
@@ -882,21 +881,12 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
   const [isLoading, setIsLoading] = useState(true);
 
   const [is3DModalOpen, setIs3DModalOpen] = useState(false);
-  const [isTcgModalOpen, setIsTcgModalOpen] = useState(false);
-  const [catalogTab, setCatalogTab] = useState<'3d' | 'tcg'>('3d');
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [showNewFilamentModal, setShowNewFilamentModal] = useState(false);
   const [showApiModal, setShowApiModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [answeringQuote, setAnsweringQuote] = useState<Quote | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  async function handleSaveTcg() {
-    const updated = await fetchRemoteProducts();
-    setCatalog(updated);
-    setIsTcgModalOpen(false);
-    setEditingProduct(null);
-  }
 
 
   // Carrega diretamente da API em produção
@@ -1235,16 +1225,23 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
         style={{ width: 220, background: '#111827', borderRight: '1px solid #1F2937' }}
       >
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-800">
-          <div className="w-10 h-10 shrink-0 flex items-center justify-center">
-            <img src="/images/logo.png" alt="ImagineLab Admin" className="w-full h-full object-contain" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7C3AED] via-[#6C4AB6] to-[#38BDF8] p-[2px] shadow-lg shadow-purple-900/40 shrink-0">
+            <div className="w-full h-full bg-[#0B0D13] rounded-[10px] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#38BDF8]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.12 6.4-6.05-4.06a2 2 0 0 0-2.17-.05L2.9 8.4A2 2 0 0 0 2 10.1v7.8a2 2 0 0 0 1.05 1.76l6.05 3.94a2 2 0 0 0 2.17.05l9.95-6.11A2 2 0 0 0 22 15.8V8a2 2 0 0 0-.88-1.6Z"/>
+                <path d="m10 22 10-6"/>
+                <path d="M10 22V10"/>
+                <path d="m2 10 10-6"/>
+              </svg>
+            </div>
           </div>
           <div>
-            <div className="font-extrabold text-[14px] text-gray-100">ImagineLab Admin</div>
+            <div className="font-extrabold text-[14px] text-gray-100">ImagineLab 3D</div>
             <button 
               onClick={() => setShowApiModal(true)} 
-              className="text-[10px] text-orange-400 font-semibold flex items-center gap-1.5 hover:underline cursor-pointer"
+              className="text-[10px] text-purple-400 font-semibold flex items-center gap-1.5 hover:underline cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Banco de Dados ⚙️
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Painel Admin ⚙️
             </button>
           </div>
         </div>
@@ -1256,7 +1253,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
               onClick={() => { setSection(n.id); setSidebarOpen(false); }}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold text-left transition-all w-full cursor-pointer"
               style={section === n.id
-                ? { background: 'rgba(249,115,22,0.14)', color: '#F97316', border: '1px solid rgba(249,115,22,0.25)' }
+                ? { background: 'rgba(124,58,237,0.18)', color: '#A78BFA', border: '1px solid rgba(124,58,237,0.35)' }
                 : { color: '#9CA3AF', background: 'transparent', border: '1px solid transparent' }
               }
             >
@@ -1268,9 +1265,9 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
         <div className="p-3 border-t border-gray-800 flex flex-col gap-2">
           <button 
             onClick={() => setShowApiModal(true)} 
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-orange-400 hover:bg-gray-800/60 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-purple-400 hover:bg-gray-800/60 transition-all cursor-pointer"
           >⚙️ Configurações da Loja</button>
-          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-orange-400 hover:bg-gray-800/60 transition-all">
+          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-purple-400 hover:bg-gray-800/60 transition-all">
             ← Ver Vitrine da Loja
           </Link>
         </div>
@@ -1289,29 +1286,20 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            {section === 'catalogo' && catalogTab === '3d' && (
+            {section === 'catalogo' && (
               <button 
                 onClick={() => setIs3DModalOpen(true)} 
-                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-orange-950/40 cursor-pointer" 
-                style={{ background: '#F97316', color: '#fff' }}
+                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-purple-950/40 cursor-pointer" 
+                style={{ background: '#7C3AED', color: '#fff' }}
               >
-                + Nova Figure
-              </button>
-            )}
-            {section === 'catalogo' && catalogTab === 'tcg' && (
-              <button 
-                onClick={() => setIsTcgModalOpen(true)} 
-                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-orange-950/40 cursor-pointer" 
-                style={{ background: '#F97316', color: '#fff' }}
-              >
-                + Novo Produto TCG
+                + Novo Produto 3D
               </button>
             )}
             {section === 'pedidos' && (
               <button 
                 onClick={() => setShowNewOrderModal(true)} 
-                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-orange-950/40 cursor-pointer" 
-                style={{ background: '#F97316', color: '#fff' }}
+                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-purple-950/40 cursor-pointer" 
+                style={{ background: '#7C3AED', color: '#fff' }}
               >
                 + Novo Pedido
               </button>
@@ -1319,8 +1307,8 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
             {section === 'estoque' && (
               <button 
                 onClick={() => setShowNewFilamentModal(true)} 
-                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-orange-950/40 cursor-pointer" 
-                style={{ background: '#F97316', color: '#fff' }}
+                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-purple-950/40 cursor-pointer" 
+                style={{ background: '#7C3AED', color: '#fff' }}
               >
                 + Nova Cor
               </button>
@@ -1361,35 +1349,29 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
     
                 ))}
               </div>
-              {/* TABS */}
-              <div className="flex gap-4 border-b border-gray-700 mb-4">
-                <button 
-                  onClick={() => setCatalogTab('3d')}
-                  className={`pb-2 px-1 text-sm font-bold border-b-2 transition-colors ${catalogTab === '3d' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
-                >
-                  Impressões 3D
-                </button>
-                <button 
-                  onClick={() => setCatalogTab('tcg')}
-                  className={`pb-2 px-1 text-sm font-bold border-b-2 transition-colors ${catalogTab === 'tcg' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
-                >
-                  Pokémon TCG
-                </button>
+              {/* TABS / HEADER */}
+              <div className="flex items-center justify-between border-b border-gray-700/80 mb-4 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-gray-200">Catálogo de Impressões 3D</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold">
+                    {catalog.length} modelos cadastrados
+                  </span>
+                </div>
               </div>
 
               {/* Table */}
               <div className="rounded-xl overflow-hidden shadow-xl border border-gray-700/80">
-                {catalog.filter(p => catalogTab === 'tcg' ? p.category === 'TCG' : p.category !== 'TCG').length === 0 ? (
+                {catalog.length === 0 ? (
                   <div className="py-16 px-4 text-center flex flex-col items-center justify-center gap-3 bg-[#111827]">
                     <div className="text-4xl">📦</div>
                     <h3 className="font-extrabold text-base text-gray-200">Nenhum produto cadastrado no banco</h3>
-                    <p className="text-xs text-gray-400 max-w-md">Todos os dados mockados foram limpos. Seu banco está vazio e pronto para receber dados reais de produção.</p>
+                    <p className="text-xs text-gray-400 max-w-md">Seu catálogo está vazio e pronto para receber novos produtos 3D.</p>
                     <button
-                      onClick={() => catalogTab === 'tcg' ? setIsTcgModalOpen(true) : setIs3DModalOpen(true)}
-                        className="mt-2 h-9 px-4 rounded-lg text-xs font-bold text-white cursor-pointer"
-                      style={{ background: '#F97316' }}
+                      onClick={() => setIs3DModalOpen(true)}
+                      className="mt-2 h-9 px-4 rounded-lg text-xs font-bold text-white cursor-pointer shadow-md shadow-purple-950/40"
+                      style={{ background: '#7C3AED' }}
                     >
-                      + Cadastrar Primeiro Produto
+                      + Cadastrar Primeiro Produto 3D
                     </button>
                   </div>
                 ) : (
@@ -1397,22 +1379,22 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-800 border-b border-gray-700">
-                          {(catalogTab === '3d' ? ['Produto','Categoria','Tipos','Escalas','Preço','Estoque','Status','Ações'] : ['Produto','Coleção','Idioma','Preço','Estoque','Status','Ações']).map(h => (
+                          {['Produto', 'Categoria', 'Tipos', 'Escalas', 'Preço', 'Estoque', 'Status', 'Ações'].map(h => (
                             <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {catalog.filter(p => catalogTab === 'tcg' ? p.category === 'TCG' : p.category !== 'TCG').map((p, i) => (
+                        {catalog.map((p, i) => (
                           <tr key={p.id} style={{ background: i % 2 === 0 ? '#111827' : '#161B24', borderBottom: '1px solid #1F2937' }}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                <img src={p.image || 'https://placehold.co/600x700/1F2937/F97316?text=Figure'} alt={p.name} className="w-10 h-12 object-cover rounded-lg shrink-0 border border-gray-700 bg-black/40" />
+                                <img src={p.image || 'https://placehold.co/600x700/1F2937/7C3AED?text=Produto+3D'} alt={p.name} className="w-10 h-12 object-cover rounded-lg shrink-0 border border-gray-700 bg-black/40" />
                                 <div>
                                   <div className="font-semibold text-sm text-gray-100 flex items-center gap-1.5">
                                     <span>{p.name}</span>
                                     {p.featured && (
-                                      <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                      <span className="text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.5 rounded uppercase tracking-wider">
                                         ⭐ Destaque da Loja
                                       </span>
                                     )}
@@ -1421,16 +1403,14 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                                 </div>
                               </div>
                             </td>
-                            {catalogTab === '3d' ? (
-                                <>
-                                  <td className="px-4 py-3 text-[12px] text-gray-300">
-                                    <div className="flex flex-col gap-1 items-start">
-                                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-black/60 text-amber-300 border border-amber-500/30">
-                                        {UNIVERSE_CONFIG[p.universe || toProductUniverse(p.universe, p.name, p.category)]?.badge || '⚡ POKÉMON'}
-                                      </span>
-                                      <span>{CATEGORY_LABELS[p.category as ProductCategory] || p.category}</span>
-                                    </div>
-                                  </td>
+                            <td className="px-4 py-3 text-[12px] text-gray-300">
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-black/60 text-purple-300 border border-purple-500/30">
+                                  {UNIVERSE_CONFIG[p.universe || toProductUniverse(p.universe, p.name, p.category)]?.badge || '🎨 GEEK 3D'}
+                                </span>
+                                <span>{CATEGORY_LABELS[p.category as ProductCategory] || p.category}</span>
+                              </div>
+                            </td>
                             <td className="px-4 py-3">
                               <div className="flex flex-wrap gap-1">
                                 {(p.types || []).map((t, idx) => <TypeBadge key={t + idx} type={t} />)}
@@ -1444,7 +1424,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                                 ))}
                               </div>
                             </td>
-                            <td className="px-4 py-3 font-bold text-sm text-orange-400">R$ {formatPrice(p.basePrice ?? 0)}</td>
+                            <td className="px-4 py-3 font-bold text-sm text-purple-400">R$ {formatPrice(p.basePrice ?? 0)}</td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
                                 <button
@@ -1469,42 +1449,6 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                                 </button>
                               </div>
                             </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td className="px-4 py-3 text-[12px] text-gray-300">{p.expansionName || '—'}</td>
-                                  <td className="px-4 py-3">
-                                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-400 border border-gray-700">
-                                      {p.materials && p.materials[0] ? p.materials[0] : '—'}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 font-bold text-sm text-orange-400">R$ {formatPrice(p.basePrice ?? 0)}</td>
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-1.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAdjustStock(p, -1)}
-                                        disabled={(p.stock ?? 1) <= 0}
-                                        className="w-6 h-6 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 flex items-center justify-center font-bold text-xs border border-gray-700 disabled:opacity-30 cursor-pointer"
-                                        title="Remover 1 unidade"
-                                      >
-                                        −
-                                      </button>
-                                      <span className="px-2 py-0.5 rounded text-xs font-bold bg-gray-800 text-gray-100 border border-gray-700 font-mono min-w-[38px] text-center">
-                                        {p.stock ?? 1} un
-                                      </span>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAdjustStock(p, 1)}
-                                        className="w-6 h-6 rounded bg-emerald-950/70 hover:bg-emerald-900 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-700/60 cursor-pointer"
-                                        title="Adicionar +1 unidade"
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                  </td>
-                                </>
-                              )}
                             <td className="px-4 py-3">
                               <span className="px-2 py-0.5 rounded text-[11px] font-semibold" style={p.active ? { background: 'rgba(34,197,94,0.15)', color: '#22C55E' } : { background: '#1F2937', color: '#6B7280' }}>
                                 {p.active ? 'Ativo' : 'Pausado'}
@@ -1526,8 +1470,8 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                                   title={p.featured ? "Remover do destaque principal" : "Destacar esta peça no topo da loja"}
                                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border cursor-pointer ${
                                     p.featured 
-                                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30' 
-                                      : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-amber-400 hover:bg-gray-700'
+                                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30' 
+                                      : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-purple-300 hover:bg-gray-700'
                                   }`}
                                 >
                                   {p.featured ? '⭐ Em Destaque' : '☆ Destacar'}
@@ -1577,7 +1521,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                     </span>
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold text-orange-400">
+                    <div className="text-2xl font-extrabold text-purple-400">
                       R$ {formatPrice(displayRealRevenue)}
                     </div>
                     <div className="text-[11px] font-semibold text-gray-300 mt-0.5">
@@ -1674,10 +1618,10 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                       <Tooltip
                         contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }}
                         labelStyle={{ color: '#F9FAFB' }}
-                        itemStyle={{ color: '#F97316' }}
+                        itemStyle={{ color: '#7C3AED' }}
                         formatter={(v) => [`R$ ${Number(v).toLocaleString('pt-BR')}`, 'Faturamento Confirmado']}
                       />
-                      <Bar dataKey="vendas" fill="#F97316" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="vendas" fill="#7C3AED" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1694,7 +1638,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl mb-2">
                 <span className="font-bold text-sm text-gray-200">Quadro Kanban de Produção</span>
-                <button onClick={() => setShowNewOrderModal(true)} className="text-xs text-orange-400 hover:underline font-bold cursor-pointer">+ Novo Pedido</button>
+                <button onClick={() => setShowNewOrderModal(true)} className="text-xs text-purple-400 hover:underline font-bold cursor-pointer">+ Novo Pedido</button>
               </div>
               <KanbanBoard />
             </div>
@@ -1741,13 +1685,13 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                     }}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       reviewFilter === f.key
-                        ? 'bg-orange-500 text-white shadow-md shadow-orange-950/30'
+                        ? 'bg-[#7C3AED] text-white shadow-md shadow-purple-950/30'
                         : 'bg-gray-800/80 text-gray-400 hover:text-white border border-gray-700/60'
                     }`}
                   >
                     <span>{f.label}</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      reviewFilter === f.key ? 'bg-orange-700 text-white' : 'bg-gray-700 text-gray-300'
+                      reviewFilter === f.key ? 'bg-[#6D28D9] text-white' : 'bg-gray-700 text-gray-300'
                     }`}>
                       {f.count}
                     </span>
@@ -1768,7 +1712,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                       Nenhuma avaliação encontrada neste filtro
                     </span>
                     <p className="max-w-md text-gray-400 leading-relaxed">
-                      Clique em <strong>"Copiar Link para WhatsApp"</strong> acima e envie para seus clientes quando eles receberem as figures em casa para coletar seus primeiros depoimentos autênticos!
+                      Clique em <strong>"Copiar Link para WhatsApp"</strong> acima e envie para seus clientes quando eles receberem as peças em casa para coletar seus primeiros depoimentos autênticos!
                     </p>
                   </div>
                 ) : (
@@ -1816,7 +1760,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                                 {[1, 2, 3, 4, 5].map(star => (
                                   <span
                                     key={star}
-                                    className={`text-xs ${star <= r.rating ? 'text-orange-400' : 'text-gray-600'}`}
+                                    className={`text-xs ${star <= r.rating ? 'text-amber-400' : 'text-gray-600'}`}
                                   >
                                     ★
                                   </span>
@@ -1829,7 +1773,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
 
                             {/* Peça */}
                             <td className="px-4 py-3 whitespace-nowrap">
-                              <span className="text-xs font-semibold text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded-md">
+                              <span className="text-xs font-semibold text-purple-400 bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded-md">
                                 {r.productName}
                               </span>
                             </td>
@@ -1921,7 +1865,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                     <tbody>
                       {orcamentos.map((s, i) => (
                         <tr key={s.id} style={{ background: i % 2 === 0 ? '#111827' : '#161B24', borderBottom: '1px solid #1F2937' }}>
-                          <td className="px-4 py-3 font-mono text-[12px] font-bold text-orange-400">{s.id}</td>
+                          <td className="px-4 py-3 font-mono text-[12px] font-bold text-purple-400">{s.id}</td>
                           <td className="px-4 py-3 font-medium text-gray-100">{s.cliente}</td>
                           <td className="px-4 py-3 font-mono text-[12px] text-gray-300">
                             📁 {s.arquivo}
@@ -1935,7 +1879,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                             <div className="flex gap-2">
                               <button 
                                 onClick={() => setAnsweringQuote(s)}
-                                className="px-3 py-1 rounded-lg text-[11px] font-semibold transition-all hover:bg-orange-500/20 cursor-pointer bg-gray-800 border border-orange-500/30 text-orange-400" 
+                                className="px-3 py-1 rounded-lg text-[11px] font-semibold transition-all hover:bg-purple-500/20 cursor-pointer bg-gray-800 border border-purple-500/30 text-purple-400" 
                               >
                                 💬 Analisar
                               </button>
@@ -1985,7 +1929,7 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                       <div className="flex items-center gap-3">
                         <span 
                           className="w-6 h-6 rounded-full border border-gray-600 shadow-md shrink-0" 
-                          style={{ backgroundColor: f.hexCode || '#f97316' }} 
+                          style={{ backgroundColor: f.hexCode || '#7C3AED' }} 
                         />
                         <div>
                           <div className="font-bold text-sm text-gray-100">{f.color}</div>
@@ -2046,32 +1990,19 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
       </main>
 
       {/* Modais */}
-      {isTcgModalOpen && (
-        <NewTcgProductModal 
-          onClose={() => setIsTcgModalOpen(false)} 
-          onSave={handleSaveTcg} 
-          initialData={editingProduct || undefined}
-        />
-      )}
       {is3DModalOpen && (
         <ProductModal 
           onClose={() => setIs3DModalOpen(false)} 
           onSave={() => {}} 
         />
       )}
-      {editingProduct && catalogTab === 'tcg' ? (
-        <NewTcgProductModal 
-          initialData={editingProduct as any} 
-          onClose={() => setEditingProduct(null)} 
-          onSave={handleSaveTcg} 
-        />
-      ) : editingProduct ? (
+      {editingProduct && (
         <ProductModal 
           initialData={editingProduct} 
           onClose={() => setEditingProduct(null)} 
           onSave={() => {}} 
         />
-      ) : null}
+      )}
       {showNewOrderModal && (
         <OrderModal
           onClose={() => setShowNewOrderModal(false)}
@@ -2130,12 +2061,12 @@ function PriceRow({ product, onSave }: { product: Product; onSave: (val: number,
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl shadow-sm transition-all bg-gray-800/80 border border-gray-700">
       <div className="flex items-center gap-3 min-w-0">
-        <img src={product.image || 'https://placehold.co/600x700/1F2937/F97316?text=Figure'} alt={product.name} className="w-11 h-13 object-cover rounded-lg shrink-0 border border-gray-700 bg-black/40" />
+        <img src={product.image || 'https://placehold.co/600x700/1F2937/7C3AED?text=Produto+3D'} alt={product.name} className="w-11 h-13 object-cover rounded-lg shrink-0 border border-gray-700 bg-black/40" />
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm text-gray-100 flex items-center gap-2">
             <span>{product.name}</span>
             {product.promoPrice && product.promoPrice > 0 && product.promoPrice < product.basePrice && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                 PROMO ATIVA
               </span>
             )}
@@ -2154,7 +2085,7 @@ function PriceRow({ product, onSave }: { product: Product; onSave: (val: number,
             value={val}
             onChange={e => setVal(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-            className="w-20 h-9 px-2 rounded-lg text-sm font-bold outline-none text-right transition-colors bg-gray-900 border border-gray-700 text-orange-400"
+            className="w-20 h-9 px-2 rounded-lg text-sm font-bold outline-none text-right transition-colors bg-gray-900 border border-gray-700 text-purple-400 focus:border-purple-500"
             title="Preço normal de tabela"
           />
         </div>
@@ -2169,16 +2100,16 @@ function PriceRow({ product, onSave }: { product: Product; onSave: (val: number,
             value={promoVal}
             onChange={e => setPromoVal(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-            className="w-20 h-9 px-2 rounded-lg text-sm font-bold outline-none text-right transition-colors bg-gray-900 border border-orange-500/40 text-amber-400 placeholder-gray-600"
+            className="w-20 h-9 px-2 rounded-lg text-sm font-bold outline-none text-right transition-colors bg-gray-900 border border-purple-500/40 text-amber-400 placeholder-gray-600 focus:border-purple-500"
             title="Preço promocional com desconto (opcional)"
           />
         </div>
 
         <button
           onClick={handleSave}
-          className="h-9 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+          className="h-9 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-md shadow-purple-950/40 hover:opacity-90"
           style={{
-            background: isSaved ? '#22C55E' : '#F97316',
+            background: isSaved ? '#22C55E' : '#7C3AED',
             color: '#fff'
           }}
         >

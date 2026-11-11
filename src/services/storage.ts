@@ -71,7 +71,7 @@ export function setFeaturedProductId(id: string | null): void {
     if (id) {
       localStorage.setItem(STORAGE_KEYS.FEATURED_ID, id);
     } else {
-      localStorage.removeItem(STORAGE_KEYS.FEATURED_ID);
+      localStorage.setItem(STORAGE_KEYS.FEATURED_ID, 'none');
     }
   } catch (e) {
     console.error('Erro ao salvar destaque:', e);
@@ -123,7 +123,7 @@ export function fileToBase64(file: File): Promise<string> {
       img.onerror = () => resolve(result);
       img.src = result;
     };
-    reader.onerror = () => resolve('https://placehold.co/600x700/1F2937/F97316?text=Figure');
+    reader.onerror = () => resolve('https://placehold.co/600x700/1F2937/7C3AED?text=Produto+3D');
     reader.readAsDataURL(file);
   });
 }
@@ -135,7 +135,9 @@ function sanitizeProduct(p: any): Product {
   const category = isTcg ? 'TCG' : toProductCategory(p?.category);
   const universe = toProductUniverse(p?.universe, p?.name, p?.category);
   const featuredId = getFeaturedProductId();
-  const isFeatured = featuredId ? p?.id?.toString() === featuredId : Boolean(p?.featured);
+  const isFeatured = featuredId !== null
+    ? (featuredId === 'none' ? false : p?.id?.toString() === featuredId)
+    : p?.id?.toString() === 'link-yarn-zelda';
   const stock = typeof p?.stock === 'number' ? p.stock : ((p as any)?.stockQuantity ?? 1);
   const rawPromo = p?.promoPrice ?? p?.promotionalPrice;
   const promoPrice = typeof rawPromo === 'number' && rawPromo > 0 
@@ -153,7 +155,7 @@ function sanitizeProduct(p: any): Product {
     basePrice: typeof p?.basePrice === 'number' ? p.basePrice : parsePrice(p?.basePrice) || 0,
     promoPrice: promoPrice && promoPrice > 0 ? promoPrice : undefined,
     finishOptions: p?.finishOptions || [],
-    image: p?.image || p?.imageUrl || 'https://placehold.co/600x700/1F2937/F97316?text=Figure',
+    image: p?.image || p?.imageUrl || 'https://placehold.co/600x700/1F2937/7C3AED?text=Produto+3D',
     printTimeH: typeof p?.printTimeH === 'number' ? p.printTimeH : Math.floor((p?.basePrintTimeMinutes || 0) / 60),
     filamentG: typeof p?.filamentG === 'number' ? p.filamentG : (p?.defaultFilamentGrams || 0),
     active: p?.active !== false && p?.isActive !== false,
@@ -339,7 +341,7 @@ export function toggleProductFeatured(id: string): boolean {
   const currentFeaturedId = getFeaturedProductId();
   const willBeFeatured = currentFeaturedId !== id;
   
-  setFeaturedProductId(willBeFeatured ? id : null);
+  setFeaturedProductId(willBeFeatured ? id : 'none');
 
   const current = getStoredProducts();
   const updated = current.map(p => ({
@@ -351,11 +353,11 @@ export function toggleProductFeatured(id: string): boolean {
 }
 
 export function setFeaturedProduct(id: string | null): void {
-  setFeaturedProductId(id);
+  setFeaturedProductId(id || 'none');
   const current = getStoredProducts();
   const updated = current.map(p => ({
     ...p,
-    featured: p.id === id
+    featured: id !== null && id !== 'none' && p.id === id
   }));
   saveProductsToStorage(updated);
 }

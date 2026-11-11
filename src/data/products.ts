@@ -93,11 +93,11 @@ export const products: Product[] = [
     materials: ['PLA', 'Resina'],
     basePrice: 149.90,
     finishOptions: FINISH_OPTIONS,
-    image: '/images/products/witcher-wolf-crest.jpg',
+    image: '/images/products/witcher-wolf-crest.png',
     printTimeH: 12.0,
     filamentG: 220,
     active: true,
-    featured: true
+    featured: false
   },
   {
     id: 'grogu-baby-yoda-yarn',
@@ -114,7 +114,7 @@ export const products: Product[] = [
     printTimeH: 9.0,
     filamentG: 160,
     active: true,
-    featured: true
+    featured: false
   },
   {
     id: 'super-mario-mushroom-lamp',
@@ -132,7 +132,7 @@ export const products: Product[] = [
     printTimeH: 14.0,
     filamentG: 280,
     active: true,
-    featured: true
+    featured: false
   }
 ];
 

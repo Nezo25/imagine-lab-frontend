@@ -119,7 +119,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
     }
 
     handleSlotChange(slotNumber, {
-      productId: Number(product.id) || null,
+      productId: product.id,
       productName: product.name,
       productCategory: product.category,
       productImageUrl: product.image,
@@ -258,6 +258,27 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
     });
   }
 
+  function handleUnlinkProduct(slotNumber: number) {
+    setPromoInputs(prev => ({ ...prev, [slotNumber]: '' }));
+    setDiscountInputs(prev => ({ ...prev, [slotNumber]: '' }));
+    handleSlotChange(slotNumber, {
+      productId: null,
+      productName: null,
+      productCategory: null,
+      productImageUrl: null,
+      originalPrice: null,
+      promotionalPrice: null,
+      discountAmount: 0,
+      discountPercentage: 0,
+      badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+    });
+    toast.show({
+      title: `Slot 0${slotNumber} Limpo`,
+      message: 'Peça desvinculada. Clique em "Salvar Slot" para confirmar.',
+      type: 'info',
+    });
+  }
+
   async function handleMysteryImageUpload(slotNumber: number, file: File) {
     try {
       const base64 = await fileToBase64(file);
@@ -273,7 +294,13 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
     try {
       await updateShowcaseSlot(slot.slotNumber, {
         productId: slot.productId,
+        productName: slot.productName,
+        productCategory: slot.productCategory,
+        productImageUrl: slot.productImageUrl,
+        originalPrice: slot.originalPrice,
         promotionalPrice: slot.promotionalPrice,
+        discountAmount: slot.discountAmount,
+        discountPercentage: slot.discountPercentage,
         badgeLabel: slot.badgeLabel,
         allowCouponStacking: slot.allowCouponStacking ?? false,
         isActive: slot.isActive ?? true,
@@ -309,7 +336,13 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
       try {
         await updateShowcaseSlot(slot.slotNumber, {
           productId: slot.productId,
+          productName: slot.productName,
+          productCategory: slot.productCategory,
+          productImageUrl: slot.productImageUrl,
+          originalPrice: slot.originalPrice,
           promotionalPrice: slot.promotionalPrice,
+          discountAmount: slot.discountAmount,
+          discountPercentage: slot.discountPercentage,
           badgeLabel: slot.badgeLabel,
           allowCouponStacking: slot.allowCouponStacking ?? false,
           isActive: slot.isActive ?? true,
@@ -361,7 +394,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
           type="button"
           disabled={savingSlot !== null}
           onClick={saveAllSlots}
-          className="h-10 px-5 rounded-xl font-bold text-xs uppercase tracking-wider bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-orange-950/50 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+          className="h-10 px-5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#7C3AED] hover:bg-[#6D28D9] disabled:bg-slate-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-purple-950/50 transition-all cursor-pointer whitespace-nowrap active:scale-95"
         >
           {savingSlot === 999 ? (
             <>
@@ -418,24 +451,24 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                     Categoria do Segredo
                   </label>
                   <select
-                    value={slot.mysteryCategory || 'FIGURE_POKEMON'}
+                    value={slot.mysteryCategory || 'GEEK_GENERAL'}
                     onChange={e => {
                       const cat = e.target.value;
-                      let defaultTitle = 'Quem é esse Pokémon?';
-                      let defaultSub = 'Próximo lançamento exclusivo em 3D';
-                      let defaultBadge = '❓ Pokémon Secreto';
-                      let defaultWpp = 'Olá, ImagineLab! Vi o Pokémon misterioso em destaque no site e quero saber qual é a peça antes de todo mundo!';
+                      let defaultTitle = 'Quem é esse Personagem?';
+                      let defaultSub = 'Colecionável exclusivo em produção';
+                      let defaultBadge = '❓ Drop Geek Misterioso';
+                      let defaultWpp = 'Olá, ImagineLab! Vi o colecionável misterioso em destaque no site e quero saber qual é a peça!';
 
-                      if (cat === 'GEEK_GENERAL') {
-                        defaultTitle = 'Quem é esse Personagem?';
-                        defaultSub = 'Colecionável exclusivo em produção';
-                        defaultBadge = '❓ Drop Geek Misterioso';
-                        defaultWpp = 'Olá, ImagineLab! Vi o personagem misterioso em destaque no site e quero saber qual é o colecionável!';
-                      } else if (cat === 'TCG_SPECIAL' || cat === 'DIORAMA') {
+                      if (cat === 'DIORAMA' || cat === 'TCG_SPECIAL') {
                         defaultTitle = 'Drop Secreto ImagineLab';
                         defaultSub = 'Lançamento especial com desconto de estreia';
                         defaultBadge = '✨ Edição Especial';
                         defaultWpp = 'Olá, ImagineLab! Vi o drop secreto em destaque no site e quero garantir as condições de estreia!';
+                      } else if (cat === 'FIGURE_POKEMON') {
+                        defaultTitle = 'Quem é esse Personagem?';
+                        defaultSub = 'Próximo lançamento exclusivo em 3D';
+                        defaultBadge = '❓ Figura Secreta';
+                        defaultWpp = 'Olá, ImagineLab! Vi a figura misteriosa em destaque no site e quero saber qual é a peça!';
                       }
 
                       handleSlotChange(slot.slotNumber, {
@@ -446,12 +479,12 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                         mysteryWhatsappText: defaultWpp,
                       });
                     }}
-                    className="h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500"
                   >
-                    <option value="FIGURE_POKEMON">Figures Pokémon (Quem é esse Pokémon?)</option>
-                    <option value="GEEK_GENERAL">Geek / Anime Geral (Quem é esse Personagem?)</option>
+                    <option value="GEEK_GENERAL">Colecionáveis Geek / Cultura Pop (Quem é esse Personagem?)</option>
                     <option value="DIORAMA">Dioramas e Cenários (Drop Secreto)</option>
-                    <option value="TCG_SPECIAL">Colecionáveis & TCG (Edição Especial)</option>
+                    <option value="FIGURE_POKEMON">Miniaturas & Action Figures 3D</option>
+                    <option value="TCG_SPECIAL">Edições Especiais Limitadas</option>
                   </select>
                 </div>
 
@@ -566,12 +599,12 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
           return (
             <div
               key={slot.slotNumber}
-              className="flex flex-col rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-colors"
+              className="flex flex-col rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition-colors"
             >
               {/* Header do Card */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                     SLOT 0{slot.slotNumber}
                   </span>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-slate-200">
@@ -584,7 +617,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                     type="checkbox"
                     checked={slot.isActive ?? true}
                     onChange={e => handleSlotChange(slot.slotNumber, { isActive: e.target.checked })}
-                    className="rounded accent-orange-500 w-3.5 h-3.5"
+                    className="rounded accent-purple-500 w-3.5 h-3.5"
                   />
                   <span className="text-[11px] text-slate-400">Ativo</span>
                 </label>
@@ -613,7 +646,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                             key={p.id}
                             type="button"
                             onClick={() => handleProductSelect(slot.slotNumber, p)}
-                            className="flex items-center gap-2 p-1.5 rounded hover:bg-orange-500/20 text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2 p-1.5 rounded hover:bg-purple-500/20 text-left transition-colors cursor-pointer"
                           >
                             <img src={p.image} alt={p.name} className="w-8 h-8 rounded object-cover bg-slate-900" />
                             <div className="flex-1 min-w-0">
@@ -629,10 +662,10 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
               </div>
 
               {/* Exibição em Tempo Real: Foto, Nome e Preço Base Atual */}
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 mb-3">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 mb-2">
                 <img
-                  src={slot.productImageUrl || 'https://placehold.co/600x700/1F2937/F97316?text=Figure'}
-                  alt={slot.productName || 'Figure'}
+                  src={slot.productImageUrl || 'https://placehold.co/600x700/1F2937/7C3AED?text=Peça+3D'}
+                  alt={slot.productName || 'Peça 3D'}
                   className="w-14 h-16 rounded-lg object-cover bg-slate-950 shrink-0 border border-slate-800"
                 />
                 <div className="flex-1 min-w-0 flex flex-col gap-0.5">
@@ -648,10 +681,21 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                 </div>
               </div>
 
+              {/* Botão de Desvincular / Limpar Slot */}
+              {slot.productName && (
+                <button
+                  type="button"
+                  onClick={() => handleUnlinkProduct(slot.slotNumber)}
+                  className="text-[10px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 cursor-pointer transition-colors self-end mb-3"
+                >
+                  <span>✕ Desvincular Peça deste Slot</span>
+                </button>
+              )}
+
               {/* Bloco de Preço da Oferta */}
               <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800 mb-3.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-black uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
                     <span>🔥</span>
                     <span>Novo Preço da Peça na Vitrine</span>
                   </label>
@@ -692,7 +736,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                           placeholder={origPrice > 0 ? `Ex: ${(origPrice - 10).toFixed(0)}` : 'Ex: 45'}
                           value={promoDisplay}
                           onChange={e => handlePromoPriceChange(slot.slotNumber, e.target.value)}
-                          className="w-full h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-orange-500"
+                          className="w-full h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-purple-500"
                         />
                         <span className="text-[9px] text-slate-400 block mt-1 leading-tight">
                           Quanto ele paga no site
@@ -709,7 +753,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                           placeholder="Ex: 10"
                           value={discountDisplay}
                           onChange={e => handleDiscountAmountChange(slot.slotNumber, e.target.value)}
-                          className="w-full h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-orange-500"
+                          className="w-full h-9 px-3 rounded-lg bg-[#1E293B] border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-purple-500"
                         />
                         <span className="text-[9px] text-slate-400 block mt-1 leading-tight">
                           Valor abatido do catálogo
@@ -729,35 +773,35 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       <button
                         type="button"
                         onClick={() => applyQuickDiscount(slot.slotNumber, 'reais', 5)}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-orange-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
+                        className="px-2 py-1 rounded bg-slate-800 hover:bg-purple-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
                       >
                         -R$ 5
                       </button>
                       <button
                         type="button"
                         onClick={() => applyQuickDiscount(slot.slotNumber, 'reais', 10)}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-orange-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
+                        className="px-2 py-1 rounded bg-slate-800 hover:bg-purple-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
                       >
                         -R$ 10
                       </button>
                       <button
                         type="button"
                         onClick={() => applyQuickDiscount(slot.slotNumber, 'reais', 15)}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-orange-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
+                        className="px-2 py-1 rounded bg-slate-800 hover:bg-purple-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
                       >
                         -R$ 15
                       </button>
                       <button
                         type="button"
                         onClick={() => applyQuickDiscount(slot.slotNumber, 'percent', 10)}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-orange-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
+                        className="px-2 py-1 rounded bg-slate-800 hover:bg-purple-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
                       >
                         -10%
                       </button>
                       <button
                         type="button"
                         onClick={() => applyQuickDiscount(slot.slotNumber, 'percent', 20)}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-orange-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
+                        className="px-2 py-1 rounded bg-slate-800 hover:bg-purple-600 text-[11px] font-bold text-slate-200 hover:text-white transition-colors border border-slate-700 cursor-pointer"
                       >
                         -20%
                       </button>
@@ -778,7 +822,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       <div className="flex items-center gap-2 pt-1 border-t border-slate-800 text-slate-300">
                         <span>De <span className="line-through text-slate-500 font-semibold">R$ {origPrice.toFixed(2).replace('.', ',')}</span></span>
                         <span>➔</span>
-                        <span className="text-orange-400 font-extrabold text-sm">
+                        <span className="text-purple-400 font-extrabold text-sm">
                           Por R$ {slot.promotionalPrice.toFixed(2).replace('.', ',')}
                         </span>
                       </div>
@@ -812,10 +856,10 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                 </label>
                 <input
                   type="text"
-                  value={slot.badgeLabel || '🔥 OFERTA DESTAQUE DA OFICINA'}
+                  value={slot.badgeLabel || '🔥 DESTAQUE IMAGINELAB'}
                   onChange={e => handleSlotChange(slot.slotNumber, { badgeLabel: e.target.value })}
-                  placeholder="Ex: 🔥 OFERTA DESTAQUE DA OFICINA"
-                  className="h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-orange-500"
+                  placeholder="Ex: 🔥 DESTAQUE IMAGINELAB"
+                  className="h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500"
                 />
               </div>
 
@@ -825,7 +869,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                   type="checkbox"
                   checked={slot.allowCouponStacking ?? false}
                   onChange={e => handleSlotChange(slot.slotNumber, { allowCouponStacking: e.target.checked })}
-                  className="mt-0.5 rounded accent-orange-500 w-3.5 h-3.5"
+                  className="mt-0.5 rounded accent-purple-500 w-3.5 h-3.5"
                 />
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-slate-300">
@@ -842,7 +886,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                 type="button"
                 disabled={isSaving}
                 onClick={() => saveSingleSlot(slot)}
-                className="w-full h-9 rounded-xl font-bold text-xs uppercase tracking-wider bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer mt-auto"
+                className="w-full h-9 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#7C3AED] hover:bg-[#6D28D9] disabled:bg-slate-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-purple-950/40 active:scale-95 transition-all cursor-pointer mt-auto"
               >
                 {isSaving ? (
                   <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
