@@ -1,4 +1,3 @@
-import { fetchApi } from '@/api/client';
 import { type Product } from '@/data/products';
 import { getStoredProducts } from './storage';
 
@@ -78,8 +77,8 @@ export interface ShowcaseSlotUpdateRequest {
   mysteryWhatsappText?: string | null;
 }
 
-const LOCAL_STORAGE_SHOWCASE_KEY = 'imaginelab_showcase_slots_v4';
-const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v4';
+const LOCAL_STORAGE_SHOWCASE_KEY = 'imaginelab_showcase_slots_v5';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v5';
 
 export function isForeignChicoItem(item: any): boolean {
   if (!item) return false;
@@ -106,14 +105,23 @@ export function isForeignChicoItem(item: any): boolean {
     str.includes('garchomp') ||
     str.includes('dialga') ||
     str.includes('demon slayer') ||
-    str.includes('figure da semana')
+    str.includes('figure da semana') ||
+    str.includes('link yarn') ||
+    str.includes('zelda') ||
+    str.includes('cabeça de lobo') ||
+    str.includes('cabeca de lobo') ||
+    str.includes('witcher') ||
+    str.includes('grogu') ||
+    str.includes('baby yoda') ||
+    str.includes('super mario') ||
+    str.includes('mushroom-lamp')
   );
 }
 
-/** Retorna vitrine pública montada exclusivamente a partir de produtos reais cadastrados */
+/** Retorna vitrine pública montada a partir dos produtos da ImagineLab */
 export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicShowcaseResponse {
   const products = catalogProducts && catalogProducts.length > 0 ? catalogProducts : getStoredProducts();
-  const activeProducts = products.filter(p => p.active);
+  const activeProducts = products.filter(p => p.active && !isForeignChicoItem(p));
 
   const makeSlot = (num: number, p: Product): PublicShowcaseSlot => {
     const orig = p.basePrice || 75;
@@ -151,8 +159,6 @@ export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicSho
     }
   }
 
-  const pFirst = activeProducts[0];
-
   return {
     slots,
     mysteryDrop: {
@@ -161,17 +167,20 @@ export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicSho
       subtitle: 'Próximo lançamento exclusivo em impressão 3D',
       category: 'GEEK_GENERAL',
       universe: 'POP_CULTURE_GEEK',
-      imageUrl: activeProducts[3]?.image || pFirst?.image || '/images/products/super-mario-mushroom-lamp.png',
+      imageUrl: activeProducts[3]?.image || activeProducts[0]?.image || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
       whatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
     },
   };
 }
 
-/** Busca a vitrine pública do Hero da API com persistência segura e isolamento total */
+/** Busca a vitrine pública do Hero com persistência segura e isolamento total */
 export async function fetchPublicShowcase(catalog?: Product[]): Promise<PublicShowcaseResponse> {
-  // Purga chaves legadas antigas
+  // Purga chaves legadas
   if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_slots_v1');
+    localStorage.removeItem('imaginelab_showcase_slots_v2');
     localStorage.removeItem('imaginelab_showcase_slots_v3');
+    localStorage.removeItem('imaginelab_showcase_slots_v4');
     localStorage.removeItem('imaginelab_showcase_slots_cache_v2');
   }
 
@@ -179,12 +188,20 @@ export async function fetchPublicShowcase(catalog?: Product[]): Promise<PublicSh
     const cached = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY) : null;
     if (cached) {
       try {
-        const parsed = JSON.parse(cached);
-        if (parsed && Array.isArray(parsed.slots) && parsed.slots.length > 0 && !isForeignChicoItem(parsed)) {
-          if (parsed.mysteryDrop?.whatsappText?.toLowerCase().includes('chico')) {
-            parsed.mysteryDrop.whatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
-          }
-          return parsed;
+        const parsed: PublicShowcaseResponse = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.slots)) {
+          const cleanSlots = parsed.slots.filter(s => s && s.productId && !isForeignChicoItem(s));
+          let wpp = parsed.mysteryDrop?.whatsappText || 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+          wpp = wpp.replace(/chico/gi, 'ImagineLab').replace(/forja/gi, 'ImagineLab');
+          const cleanMystery: PublicMysteryDrop = {
+            slotNumber: 4,
+            title: parsed.mysteryDrop?.title || 'Drop Secreto ImagineLab',
+            subtitle: parsed.mysteryDrop?.subtitle || 'Próximo lançamento exclusivo em impressão 3D',
+            category: parsed.mysteryDrop?.category || 'GEEK_GENERAL',
+            imageUrl: parsed.mysteryDrop?.imageUrl || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+            whatsappText: wpp,
+          };
+          return { slots: cleanSlots, mysteryDrop: cleanMystery };
         }
       } catch {}
     }
@@ -203,7 +220,10 @@ export async function fetchPublicShowcase(catalog?: Product[]): Promise<PublicSh
 export async function fetchAdminShowcase(catalog?: Product[]): Promise<AdminShowcaseSlot[]> {
   // Purga chaves legadas antigas
   if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_admin_v1');
+    localStorage.removeItem('imaginelab_showcase_admin_v2');
     localStorage.removeItem('imaginelab_showcase_admin_v3');
+    localStorage.removeItem('imaginelab_showcase_admin_v4');
     localStorage.removeItem('imaginelab_showcase_admin_cache_v1');
   }
 
@@ -213,46 +233,89 @@ export async function fetchAdminShowcase(catalog?: Product[]): Promise<AdminShow
     if (cached) {
       try {
         const parsed: AdminShowcaseSlot[] = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length === 4 && !isForeignChicoItem(parsed)) {
-          parsed.forEach(s => {
-            if (s.mysteryWhatsappText?.toLowerCase().includes('chico')) {
-              s.mysteryWhatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+        if (Array.isArray(parsed) && parsed.length === 4) {
+          const cleaned = parsed.map(s => {
+            if (s.slotNumber === 4) {
+              let wpp = s.mysteryWhatsappText || 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+              wpp = wpp.replace(/chico/gi, 'ImagineLab').replace(/forja/gi, 'ImagineLab');
+              return {
+                ...s,
+                mysteryTitle: s.mysteryTitle || 'Drop Secreto ImagineLab',
+                mysterySubtitle: s.mysterySubtitle || 'Próximo lançamento exclusivo em impressão 3D',
+                mysteryWhatsappText: wpp,
+              };
             }
+            if (isForeignChicoItem(s)) {
+              return {
+                slotNumber: s.slotNumber,
+                productId: null,
+                productName: null,
+                productCategory: null,
+                productImageUrl: null,
+                originalPrice: null,
+                promotionalPrice: null,
+                discountAmount: 0,
+                discountPercentage: 0,
+                badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+                allowCouponStacking: false,
+                isActive: true,
+              };
+            }
+            return s;
           });
-          return parsed;
+          localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(cleaned));
+          return cleaned;
         }
       } catch {}
     }
   }
 
-  // 2. Gera slots padrão a partir do catálogo exclusivo da ImagineLab
+  // 2. Slots iniciais prontos e limpos para a ImagineLab
   const fallback = getDefaultPublicShowcase(catalog);
-  const initialSlots: AdminShowcaseSlot[] = [
-    ...fallback.slots.map(s => ({
-      slotNumber: s.slotNumber,
-      productId: s.productId,
-      productName: s.name,
-      productCategory: s.category,
-      productImageUrl: s.imageUrl,
-      originalPrice: s.originalPrice,
-      promotionalPrice: s.promotionalPrice,
-      discountAmount: s.discountAmount,
-      discountPercentage: s.discountPercentage,
-      badgeLabel: s.badgeLabel || '🔥 DESTAQUE IMAGINELAB',
-      allowCouponStacking: s.allowCouponStacking ?? false,
+  const initialSlots: AdminShowcaseSlot[] = [1, 2, 3].map(num => {
+    const match = fallback.slots.find(s => s.slotNumber === num);
+    if (match && !isForeignChicoItem(match)) {
+      return {
+        slotNumber: match.slotNumber,
+        productId: match.productId,
+        productName: match.name,
+        productCategory: match.category,
+        productImageUrl: match.imageUrl,
+        originalPrice: match.originalPrice,
+        promotionalPrice: match.promotionalPrice,
+        discountAmount: match.discountAmount,
+        discountPercentage: match.discountPercentage,
+        badgeLabel: match.badgeLabel || '🔥 DESTAQUE IMAGINELAB',
+        allowCouponStacking: match.allowCouponStacking ?? false,
+        isActive: true,
+      };
+    }
+    return {
+      slotNumber: num,
+      productId: null,
+      productName: null,
+      productCategory: null,
+      productImageUrl: null,
+      originalPrice: null,
+      promotionalPrice: null,
+      discountAmount: 0,
+      discountPercentage: 0,
+      badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+      allowCouponStacking: false,
       isActive: true,
-    })),
-    {
-      slotNumber: 4,
-      isActive: true,
-      badgeLabel: '❓ DROP MISTERIOSO',
-      mysteryTitle: fallback.mysteryDrop.title,
-      mysterySubtitle: fallback.mysteryDrop.subtitle,
-      mysteryCategory: fallback.mysteryDrop.category,
-      mysteryImageUrl: fallback.mysteryDrop.imageUrl,
-      mysteryWhatsappText: fallback.mysteryDrop.whatsappText,
-    },
-  ];
+    };
+  });
+
+  initialSlots.push({
+    slotNumber: 4,
+    isActive: true,
+    badgeLabel: '❓ DROP MISTERIOSO',
+    mysteryTitle: fallback.mysteryDrop.title,
+    mysterySubtitle: fallback.mysteryDrop.subtitle,
+    mysteryCategory: fallback.mysteryDrop.category,
+    mysteryImageUrl: fallback.mysteryDrop.imageUrl,
+    mysteryWhatsappText: fallback.mysteryDrop.whatsappText,
+  });
 
   if (typeof window !== 'undefined') {
     localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(initialSlots));
@@ -267,7 +330,6 @@ export async function updateShowcaseSlot(
 ): Promise<AdminShowcaseSlot> {
   let updatedSlot: AdminShowcaseSlot = { slotNumber, ...request };
 
-  // 1. Salva no cache local de administração imediatamente
   if (typeof window !== 'undefined') {
     try {
       const cached = localStorage.getItem(ADMIN_SHOWCASE_CACHE_KEY);
@@ -285,56 +347,57 @@ export async function updateShowcaseSlot(
       localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(slots));
 
       // 2. Atualiza em tempo real a vitrine pública (para o Hero da Home)
-      let pub: PublicShowcaseResponse;
-      try {
-        const publicCached = localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY);
-        pub = publicCached ? JSON.parse(publicCached) : getDefaultPublicShowcase();
-        if (!pub || !Array.isArray(pub.slots) || pub.slots.length === 0 || isForeignChicoItem(pub)) {
-          pub = getDefaultPublicShowcase();
+      const publicCached = localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY);
+      let pub: PublicShowcaseResponse = publicCached ? JSON.parse(publicCached) : {
+        slots: [],
+        mysteryDrop: {
+          slotNumber: 4,
+          title: 'Drop Secreto ImagineLab',
+          subtitle: 'Próximo lançamento exclusivo em impressão 3D',
+          category: 'GEEK_GENERAL',
+          imageUrl: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+          whatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
         }
-      } catch {
-        pub = getDefaultPublicShowcase();
-      }
+      };
+
+      if (!pub.slots) pub.slots = [];
 
       if (slotNumber >= 1 && slotNumber <= 3) {
         const pIdx = pub.slots.findIndex((s: any) => s.slotNumber === slotNumber);
-        if (pIdx !== -1) {
-          if (request.productId === null) {
-            pub.slots[pIdx] = {
-              slotNumber,
-              productId: null,
-              name: null,
-              imageUrl: null,
-              originalPrice: null,
-              promotionalPrice: null,
-              discountAmount: 0,
-              discountPercentage: 0,
-              badgeLabel: null,
-            };
+        if (request.productId === null) {
+          if (pIdx !== -1) {
+            pub.slots.splice(pIdx, 1);
+          }
+        } else {
+          const newSlotItem: PublicShowcaseSlot = {
+            slotNumber,
+            productId: request.productId,
+            name: request.productName,
+            category: request.productCategory,
+            imageUrl: request.productImageUrl,
+            originalPrice: request.originalPrice,
+            promotionalPrice: request.promotionalPrice,
+            discountAmount: request.discountAmount,
+            discountPercentage: request.discountPercentage,
+            badgeLabel: request.badgeLabel || '🔥 DESTAQUE IMAGINELAB',
+            allowCouponStacking: request.allowCouponStacking ?? false,
+          };
+          if (pIdx !== -1) {
+            pub.slots[pIdx] = newSlotItem;
           } else {
-            pub.slots[pIdx] = {
-              ...pub.slots[pIdx],
-              productId: request.productId,
-              name: request.productName !== undefined ? request.productName : pub.slots[pIdx]?.name,
-              category: request.productCategory !== undefined ? request.productCategory : pub.slots[pIdx]?.category,
-              imageUrl: request.productImageUrl !== undefined ? request.productImageUrl : pub.slots[pIdx]?.imageUrl,
-              originalPrice: request.originalPrice !== undefined ? request.originalPrice : pub.slots[pIdx]?.originalPrice,
-              promotionalPrice: request.promotionalPrice !== undefined ? request.promotionalPrice : pub.slots[pIdx]?.promotionalPrice,
-              discountAmount: request.discountAmount !== undefined ? request.discountAmount : pub.slots[pIdx]?.discountAmount,
-              discountPercentage: request.discountPercentage !== undefined ? request.discountPercentage : pub.slots[pIdx]?.discountPercentage,
-              badgeLabel: request.badgeLabel !== undefined ? request.badgeLabel : pub.slots[pIdx]?.badgeLabel,
-              allowCouponStacking: request.allowCouponStacking !== undefined ? request.allowCouponStacking : pub.slots[pIdx]?.allowCouponStacking,
-            };
+            pub.slots.push(newSlotItem);
           }
         }
-      } else if (slotNumber === 4 && pub.mysteryDrop) {
+      } else if (slotNumber === 4) {
+        let wpp = request.mysteryWhatsappText || pub.mysteryDrop?.whatsappText || 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+        wpp = wpp.replace(/chico/gi, 'ImagineLab').replace(/forja/gi, 'ImagineLab');
         pub.mysteryDrop = {
-          ...pub.mysteryDrop,
-          title: request.mysteryTitle !== undefined && request.mysteryTitle !== null ? request.mysteryTitle : pub.mysteryDrop.title,
-          subtitle: request.mysterySubtitle !== undefined && request.mysterySubtitle !== null ? request.mysterySubtitle : pub.mysteryDrop.subtitle,
-          category: request.mysteryCategory !== undefined && request.mysteryCategory !== null ? request.mysteryCategory : pub.mysteryDrop.category,
-          imageUrl: request.mysteryImageUrl !== undefined && request.mysteryImageUrl !== null ? request.mysteryImageUrl : pub.mysteryDrop.imageUrl,
-          whatsappText: request.mysteryWhatsappText !== undefined && request.mysteryWhatsappText !== null ? request.mysteryWhatsappText : pub.mysteryDrop.whatsappText,
+          slotNumber: 4,
+          title: request.mysteryTitle || pub.mysteryDrop?.title || 'Drop Secreto ImagineLab',
+          subtitle: request.mysterySubtitle || pub.mysteryDrop?.subtitle || 'Próximo lançamento exclusivo em impressão 3D',
+          category: request.mysteryCategory || pub.mysteryDrop?.category || 'GEEK_GENERAL',
+          imageUrl: request.mysteryImageUrl || pub.mysteryDrop?.imageUrl || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+          whatsappText: wpp,
         };
       }
 

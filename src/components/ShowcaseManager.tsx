@@ -14,55 +14,77 @@ interface ShowcaseManagerProps {
   products: Product[];
 }
 
-const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v4';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v5';
 
 function buildInitialSlots(products: Product[]): AdminShowcaseSlot[] {
   if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_admin_v1');
+    localStorage.removeItem('imaginelab_showcase_admin_v2');
     localStorage.removeItem('imaginelab_showcase_admin_v3');
+    localStorage.removeItem('imaginelab_showcase_admin_v4');
     localStorage.removeItem('imaginelab_showcase_admin_cache_v1');
     const cached = localStorage.getItem(ADMIN_SHOWCASE_CACHE_KEY);
     if (cached) {
       try {
         const parsed: AdminShowcaseSlot[] = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length === 4 && !isForeignChicoItem(parsed)) {
-          parsed.forEach(s => {
-            if (s.mysteryWhatsappText?.toLowerCase().includes('chico')) {
-              s.mysteryWhatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+        if (Array.isArray(parsed) && parsed.length === 4) {
+          return parsed.map(s => {
+            if (s.slotNumber === 4) {
+              let wpp = s.mysteryWhatsappText || 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+              wpp = wpp.replace(/chico/gi, 'ImagineLab').replace(/forja/gi, 'ImagineLab');
+              return {
+                ...s,
+                mysteryTitle: s.mysteryTitle || 'Drop Secreto ImagineLab',
+                mysterySubtitle: s.mysterySubtitle || 'Próximo lançamento exclusivo em impressão 3D',
+                mysteryWhatsappText: wpp,
+              };
             }
+            if (isForeignChicoItem(s)) {
+              return {
+                slotNumber: s.slotNumber,
+                productId: null,
+                productName: null,
+                productCategory: null,
+                productImageUrl: null,
+                originalPrice: null,
+                promotionalPrice: null,
+                discountAmount: 0,
+                discountPercentage: 0,
+                badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+                allowCouponStacking: false,
+                isActive: true,
+              };
+            }
+            return s;
           });
-          return parsed;
         }
       } catch {}
     }
   }
 
-  const fallback = getDefaultPublicShowcase(products);
-  return [
-    ...fallback.slots.map(s => ({
-      slotNumber: s.slotNumber,
-      productId: s.productId,
-      productName: s.name,
-      productCategory: s.category,
-      productImageUrl: s.imageUrl,
-      originalPrice: s.originalPrice,
-      promotionalPrice: s.promotionalPrice,
-      discountAmount: s.discountAmount,
-      discountPercentage: s.discountPercentage,
-      badgeLabel: s.badgeLabel || '🔥 DESTAQUE IMAGINELAB',
-      allowCouponStacking: s.allowCouponStacking ?? false,
-      isActive: true,
-    })),
-    {
-      slotNumber: 4,
-      isActive: true,
-      badgeLabel: '❓ DROP MISTERIOSO',
-      mysteryTitle: fallback.mysteryDrop.title,
-      mysterySubtitle: fallback.mysteryDrop.subtitle,
-      mysteryCategory: fallback.mysteryDrop.category,
-      mysteryImageUrl: fallback.mysteryDrop.imageUrl,
-      mysteryWhatsappText: fallback.mysteryDrop.whatsappText,
-    },
-  ];
+  return [1, 2, 3].map(num => ({
+    slotNumber: num,
+    productId: null,
+    productName: null,
+    productCategory: null,
+    productImageUrl: null,
+    originalPrice: null,
+    promotionalPrice: null,
+    discountAmount: 0,
+    discountPercentage: 0,
+    badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+    allowCouponStacking: false,
+    isActive: true,
+  })).concat([{
+    slotNumber: 4,
+    isActive: true,
+    badgeLabel: '❓ DROP MISTERIOSO',
+    mysteryTitle: 'Drop Secreto ImagineLab',
+    mysterySubtitle: 'Próximo lançamento exclusivo em impressão 3D',
+    mysteryCategory: 'GEEK_GENERAL',
+    mysteryImageUrl: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+    mysteryWhatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
+  }]);
 }
 
 export function ShowcaseManager({ products }: ShowcaseManagerProps) {
@@ -387,6 +409,54 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
     }
   }
 
+  function handleClearAllSlots() {
+    if (confirm('Deseja desvincular todas as peças da vitrine principal?')) {
+      const cleared: AdminShowcaseSlot[] = [1, 2, 3].map(num => ({
+        slotNumber: num,
+        productId: null,
+        productName: null,
+        productCategory: null,
+        productImageUrl: null,
+        originalPrice: null,
+        promotionalPrice: null,
+        discountAmount: 0,
+        discountPercentage: 0,
+        badgeLabel: '🔥 DESTAQUE IMAGINELAB',
+        allowCouponStacking: false,
+        isActive: true,
+      })).concat([{
+        slotNumber: 4,
+        isActive: true,
+        badgeLabel: '❓ DROP MISTERIOSO',
+        mysteryTitle: 'Drop Secreto ImagineLab',
+        mysterySubtitle: 'Próximo lançamento exclusivo em impressão 3D',
+        mysteryCategory: 'GEEK_GENERAL',
+        mysteryImageUrl: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+        mysteryWhatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
+      }]);
+      setSlots(cleared);
+      localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(cleared));
+      localStorage.setItem('imaginelab_showcase_slots_v5', JSON.stringify({
+        slots: [],
+        mysteryDrop: {
+          slotNumber: 4,
+          title: 'Drop Secreto ImagineLab',
+          subtitle: 'Próximo lançamento exclusivo em impressão 3D',
+          category: 'GEEK_GENERAL',
+          imageUrl: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+          whatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
+        }
+      }));
+      window.dispatchEvent(new Event('imaginelab_showcase_updated'));
+      toast.show({
+        title: 'Vitrine Limpa!',
+        message: 'Todas as peças foram desvinculadas dos slots da vitrine.',
+        type: 'info',
+        icon: '🗑️'
+      });
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header & Actions */}
@@ -402,24 +472,35 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={savingSlot !== null}
-          onClick={saveAllSlots}
-          className="h-10 px-5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#7C3AED] hover:bg-[#6D28D9] disabled:bg-slate-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-purple-950/50 transition-all cursor-pointer whitespace-nowrap active:scale-95"
-        >
-          {savingSlot === 999 ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Salvando Todos...</span>
-            </>
-          ) : (
-            <>
-              <span>Salvar Todos os Slots</span>
-              <span>💾</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleClearAllSlots}
+            className="h-10 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-rose-950/50 hover:bg-rose-900/70 border border-rose-800/40 text-rose-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            title="Desvincular todos os produtos dos slots"
+          >
+            <span>🗑️</span>
+            <span>Limpar Vitrine</span>
+          </button>
+          <button
+            type="button"
+            disabled={savingSlot !== null}
+            onClick={saveAllSlots}
+            className="h-10 px-5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#7C3AED] hover:bg-[#6D28D9] disabled:bg-slate-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-purple-950/50 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+          >
+            {savingSlot === 999 ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Salvando Todos...</span>
+              </>
+            ) : (
+              <>
+                <span>Salvar Todos os Slots</span>
+                <span>💾</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Grid com os 4 Slots da Vitrine */}

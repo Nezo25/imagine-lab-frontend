@@ -37,7 +37,7 @@ export interface CouponValidationResult {
   message: string;
 }
 
-const LOCAL_STORAGE_COUPONS = 'imaginelab_admin_coupons_cache';
+const LOCAL_STORAGE_COUPONS = 'imaginelab_admin_coupons_v3';
 
 const DEFAULT_COUPONS: Coupon[] = [
   {
@@ -47,7 +47,7 @@ const DEFAULT_COUPONS: Coupon[] = [
     discountValue: 10,
     minOrderValue: 50,
     maxUses: null,
-    currentUses: 4,
+    currentUses: 0,
     isFirstPurchaseOnly: true,
     expiresAt: null,
     isActive: true,
@@ -60,7 +60,7 @@ const DEFAULT_COUPONS: Coupon[] = [
     discountValue: 15,
     minOrderValue: 100,
     maxUses: 50,
-    currentUses: 12,
+    currentUses: 0,
     isFirstPurchaseOnly: false,
     expiresAt: null,
     isActive: true,
@@ -70,10 +70,19 @@ const DEFAULT_COUPONS: Coupon[] = [
 
 function getLocalCoupons(): Coupon[] {
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_COUPONS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('imaginelab_admin_coupons_cache');
+      const raw = localStorage.getItem(LOCAL_STORAGE_COUPONS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Filtra qualquer cupom vazado da Forja do Chico
+          return parsed.filter(c => {
+            const str = JSON.stringify(c).toUpperCase();
+            return !str.includes('FORJA') && !str.includes('CHICO');
+          });
+        }
+      }
     }
   } catch (e) {
     console.warn('Erro ao ler cupons do localStorage:', e);
@@ -83,27 +92,26 @@ function getLocalCoupons(): Coupon[] {
 
 function saveLocalCoupons(coupons: Coupon[]) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_COUPONS, JSON.stringify(coupons));
+    const clean = coupons.filter(c => {
+      const str = JSON.stringify(c).toUpperCase();
+      return !str.includes('FORJA') && !str.includes('CHICO');
+    });
+    localStorage.setItem(LOCAL_STORAGE_COUPONS, JSON.stringify(clean));
   } catch (e) {
     console.warn('Erro ao salvar cupons localmente:', e);
   }
 }
 
 export async function fetchAdminCoupons(): Promise<Coupon[]> {
-  try {
-    const data = await fetchApi<Coupon[]>('/admin/coupons');
-    if (Array.isArray(data) && data.length > 0) {
-      saveLocalCoupons(data);
-      return data;
-    }
-  } catch (err) {
-    console.warn('Falha ao buscar cupons na API, usando cache local:', err);
-  }
   return getLocalCoupons();
 }
 
 export async function createCoupon(couponData: CouponRequest): Promise<Coupon> {
   const cleanCode = couponData.code.trim().toUpperCase();
+  if (cleanCode.includes('FORJA') || cleanCode.includes('CHICO')) {
+    throw new Error('Código inválido');
+  }
+
   const payload = {
     ...couponData,
     code: cleanCode,
@@ -112,21 +120,6 @@ export async function createCoupon(couponData: CouponRequest): Promise<Coupon> {
     isActive: couponData.isActive !== false
   };
 
-  try {
-    const created = await fetchApi<Coupon>('/admin/coupons', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    if (created && created.id) {
-      const current = getLocalCoupons().filter(c => c.id !== created.id);
-      saveLocalCoupons([created, ...current]);
-      return created;
-    }
-  } catch (err) {
-    console.warn('Falha na API ao criar cupom, persistindo localmente:', err);
-  }
-
-  // Fallback local se a API estiver indisponível
   const current = getLocalCoupons();
   if (current.some(c => c.code.toUpperCase() === cleanCode)) {
     throw new Error(`Já existe um cupom cadastrado com o código ${cleanCode}`);
@@ -151,19 +144,6 @@ export async function createCoupon(couponData: CouponRequest): Promise<Coupon> {
 }
 
 export async function toggleCouponActive(id: number): Promise<Coupon> {
-  try {
-    const updated = await fetchApi<Coupon>(`/admin/coupons/${id}/toggle`, {
-      method: 'PATCH'
-    });
-    if (updated) {
-      const current = getLocalCoupons().map(c => c.id === id ? updated : c);
-      saveLocalCoupons(current);
-      return updated;
-    }
-  } catch (err) {
-    console.warn('Falha na API ao alternar status do cupom, atualizando localmente:', err);
-  }
-
   const current = getLocalCoupons();
   const match = current.find(c => c.id === id);
   if (!match) throw new Error('Cupom não encontrado');
@@ -173,14 +153,6 @@ export async function toggleCouponActive(id: number): Promise<Coupon> {
 }
 
 export async function deleteCoupon(id: number): Promise<void> {
-  try {
-    await fetchApi(`/admin/coupons/${id}`, {
-      method: 'DELETE'
-    });
-  } catch (err) {
-    console.warn('Falha na API ao deletar cupom, removendo localmente:', err);
-  }
-
   const current = getLocalCoupons().filter(c => c.id !== id);
   saveLocalCoupons(current);
 }
@@ -203,25 +175,6 @@ export async function validateCoupon(
   }
 
   const cleanCode = code.trim().toUpperCase();
-
-  try {
-    const result = await fetchApi<CouponValidationResult>('/coupons/validate', {
-      method: 'POST',
-      body: JSON.stringify({
-        code: cleanCode,
-        subtotal,
-        customerEmail: customerEmail || '',
-        customerPhone: customerPhone || ''
-      })
-    });
-    if (result && typeof result.valid === 'boolean') {
-      return result;
-    }
-  } catch (err) {
-    console.warn('Falha na validação remota de cupom, validando com regras locais:', err);
-  }
-
-  // Fallback offline / resilience check
   const localList = getLocalCoupons();
   const found = localList.find(c => c.code.toUpperCase() === cleanCode);
 

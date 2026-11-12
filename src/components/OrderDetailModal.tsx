@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { OrderKanbanDTO } from './KanbanBoard';
+import { OrderKanbanDTO, deleteKanbanCard, moveKanbanCard } from '@/services/kanban';
 import { toast } from '@/components/Toast';
-import { fetchApi } from '@/api/client';
 
 interface OrderDetailModalProps {
   order: OrderKanbanDTO;
@@ -36,20 +35,11 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   const wppMessage = `Olá ${order.customerName}! Aqui é da equipe ImagineLab 3D sobre sua encomenda ${order.shortCode}.`;
   const whatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(wppMessage)}`;
 
-  // Salva anotações internas da equipe (backend + fallback localStorage)
+  // Salva anotações internas da equipe (persistência local garantida)
   async function handleSaveNotes() {
     setSavingNotes(true);
     try {
       localStorage.setItem(`imaginelab_notes_${order.id}`, internalNotes);
-      localStorage.setItem(`imaginelab_notes_${order.id}`, internalNotes);
-      await fetchApi(`/admin/orders/${order.id}/internal-notes`, {
-        method: 'PATCH',
-        body: JSON.stringify({ internalNotes })
-      });
-      setNotesSaved(true);
-      setTimeout(() => setNotesSaved(false), 2500);
-    } catch {
-      // Mesmo com erro de rede ou backend off, persistência local garantida
       setNotesSaved(true);
       setTimeout(() => setNotesSaved(false), 2500);
     } finally {
@@ -60,14 +50,9 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   // Excluir OS
   async function handleDelete() {
     if (!confirm(`Deseja realmente excluir a OS ${order.shortCode}?`)) return;
-    try {
-      await fetchApi(`/admin/orders/${order.id}`, { method: 'DELETE' });
-      toast.show({ title: 'Sucesso', message: `OS ${order.shortCode} excluída.`, type: 'success' });
-      window.dispatchEvent(new Event('imaginelab_orders_updated'));
-      onClose();
-    } catch (e: any) {
-      toast.show({ title: 'Erro', message: e.message || 'Falha ao excluir.', type: 'error' });
-    }
+    deleteKanbanCard(order.id);
+    toast.show({ title: 'Sucesso', message: `OS ${order.shortCode} excluída.`, type: 'success' });
+    onClose();
   }
 
   // Rejeitar / Cancelar Pedido com justificativa
@@ -76,39 +61,30 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
     if (reason === null) return;
     setRejecting(true);
     try {
-      await fetchApi(`/admin/orders/${order.id}/reject`, {
-        method: 'PATCH',
-        body: JSON.stringify({ rejectionReason: reason || 'Cancelado pelo operador' })
-      });
+      deleteKanbanCard(order.id);
       toast.show({ 
-        title: 'Pedido Rejeitado', 
-        message: `OS ${order.shortCode} movida para Cancelados.`, 
+        title: 'Pedido Removido', 
+        message: `OS ${order.shortCode} foi cancelada e removida.`, 
         type: 'info' 
       });
-      window.dispatchEvent(new Event('imaginelab_orders_updated'));
       onClose();
-    } catch (e: any) {
-      toast.show({ title: 'Erro', message: e.message || 'Falha ao rejeitar.', type: 'error' });
     } finally {
       setRejecting(false);
     }
   }
 
-  // Aprovar e Enviar para Fila 3D (Sem travas de pesagem/filamento)
+  // Aprovar e Enviar para Fila 3D
   async function handleApprove() {
     setApproving(true);
     try {
-      await fetchApi(`/admin/orders/${order.id}/approve`, { method: 'PATCH' });
+      moveKanbanCard(order.id, 'SLICING_QUEUE');
       toast.show({ 
         title: 'Pedido Aprovado! 🚀', 
         message: `OS ${order.shortCode} enviada diretamente para a Fila 3D!`, 
         type: 'success',
         icon: '⚙️'
       });
-      window.dispatchEvent(new Event('imaginelab_orders_updated'));
       onClose();
-    } catch (e: any) {
-      toast.show({ title: 'Erro', message: e.message || 'Falha ao aprovar pedido.', type: 'error' });
     } finally {
       setApproving(false);
     }

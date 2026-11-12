@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { fetchApi } from '../api/client';
 import { toast } from './Toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useSearchParams } from 'react-router-dom';
 import { OrderDetailModal } from './OrderDetailModal';
+import {
+  type KanbanColumn,
+  type OrderKanbanDTO,
+  getStoredKanban,
+  saveStoredKanban,
+  deleteKanbanCard,
+  EMPTY_KANBAN_BOARD
+} from '@/services/kanban';
 
-type KanbanColumn = 'NEW_LEAD' | 'NEGOTIATING_APPROVED' | 'SLICING_QUEUE' | 'PRINTING' | 'POST_PROCESSING' | 'READY_SHIPPED';
+export { type KanbanColumn, type OrderKanbanDTO };
 
 const COLUMNS: { id: KanbanColumn, label: string, icon: string }[] = [
   { id: 'NEW_LEAD', label: 'Novos Leads', icon: '📥' },
@@ -16,47 +23,16 @@ const COLUMNS: { id: KanbanColumn, label: string, icon: string }[] = [
   { id: 'READY_SHIPPED', label: 'Enviados', icon: '🚀' },
 ];
 
-export interface OrderKanbanItemDTO {
-  itemName: string;
-  quantity: number;
-  finishType: string;
-  filamentColor?: string;
-  scale?: string;
-  printTimeMinutes?: number;
-}
-
-export interface OrderKanbanDTO {
-  id: number;
-  shortCode: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  totalAmount: number;
-  kanbanColumn: KanbanColumn;
-  tags: string[];
-  items?: OrderKanbanItemDTO[];
-  customerNotes?: string;
-  internalNotes?: string;
-}
-
 export function KanbanBoard() {
-  const [board, setBoard] = useState<Record<KanbanColumn, OrderKanbanDTO[]>>({} as any);
-  const [loading, setLoading] = useState(true);
+  const [board, setBoard] = useState<Record<KanbanColumn, OrderKanbanDTO[]>>(() => getStoredKanban());
+  const [loading, setLoading] = useState(false);
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('email') || searchParams.get('os') || searchParams.get('phone') || '');
   const [selectedOrder, setSelectedOrder] = useState<OrderKanbanDTO | null>(null);
 
-    const fetchKanban = async () => {
-    try {
-      setLoading(true);
-      const res: any = await fetchApi(`/admin/orders/kanban?t=${Date.now()}`);
-      setBoard(res);
-    } catch (err) {
-      toast.error('Erro ao carregar Kanban');
-    } finally {
-      setLoading(false);
-    }
+  const fetchKanban = () => {
+    setBoard(getStoredKanban());
   };
 
   useEffect(() => {
@@ -71,10 +47,17 @@ export function KanbanBoard() {
   const filteredBoard = useMemo(() => {
     if (!searchTerm) return board;
     const lower = searchTerm.toLowerCase();
-    const result: Record<KanbanColumn, OrderKanbanDTO[]> = {} as any;
-    for (const key in board) {
-      const k = key as KanbanColumn;
-      result[k] = board[k].filter(c => 
+    const result: Record<KanbanColumn, OrderKanbanDTO[]> = {
+      NEW_LEAD: [],
+      NEGOTIATING_APPROVED: [],
+      SLICING_QUEUE: [],
+      PRINTING: [],
+      POST_PROCESSING: [],
+      READY_SHIPPED: [],
+    };
+    for (const key of Object.keys(board) as KanbanColumn[]) {
+      const list = board[key] || [];
+      result[key] = list.filter(c => 
         (c.shortCode && c.shortCode.toLowerCase().includes(lower)) || 
         (c.customerName && c.customerName.toLowerCase().includes(lower)) ||
         (c.customerEmail && c.customerEmail.toLowerCase().includes(lower)) ||
@@ -83,6 +66,10 @@ export function KanbanBoard() {
     }
     return result;
   }, [board, searchTerm]);
+
+  const totalCardsCount = useMemo(() => {
+    return Object.values(board).reduce((acc, list) => acc + (list?.length || 0), 0);
+  }, [board]);
 
   const totalFilteredCards = useMemo(() => Object.values(filteredBoard).flat(), [filteredBoard]);
   const hasSingleResult = totalFilteredCards.length === 1;
@@ -101,7 +88,7 @@ export function KanbanBoard() {
     }
   }, [board, searchParams]);
 
-  const onDragEnd = async (result: DropResult) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     
     const sourceColId = result.source.droppableId as KanbanColumn;
@@ -111,30 +98,30 @@ export function KanbanBoard() {
       return;
     }
 
-    const sourceCol = [...board[sourceColId]];
-    const destCol = sourceColId === destColId ? sourceCol : [...board[destColId]];
+    const sourceCol = [...(board[sourceColId] || [])];
+    const destCol = sourceColId === destColId ? sourceCol : [...(board[destColId] || [])];
     const [moved] = sourceCol.splice(result.source.index, 1);
+    if (!moved) return;
     
     moved.kanbanColumn = destColId;
     destCol.splice(result.destination.index, 0, moved);
 
-    setBoard({
+    const nextBoard = {
       ...board,
       [sourceColId]: sourceCol,
       [destColId]: destCol
-    });
+    };
 
-    if (sourceColId !== destColId) {
-      try {
-        await fetchApi(`/admin/orders/${moved.id}/kanban-column?column=${destColId}`, {
-          method: 'PATCH'
-        });
-        toast.success(`Pedido ${moved.shortCode} movido`);
-      } catch (err) {
-        toast.error('Erro ao mover pedido');
-        fetchKanban();
-      }
-    }
+    setBoard(nextBoard);
+    saveStoredKanban(nextBoard);
+    toast.success(`Pedido ${moved.shortCode} movido`);
+  };
+
+  const handleClearKanban = () => {
+    if (!confirm('Deseja realmente apagar TODOS os pedidos do Kanban?')) return;
+    saveStoredKanban(EMPTY_KANBAN_BOARD);
+    setBoard(EMPTY_KANBAN_BOARD);
+    toast.success('Kanban limpo com sucesso.');
   };
 
   if (loading) {
@@ -143,27 +130,39 @@ export function KanbanBoard() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="mb-4 flex items-center gap-3">
-        <input 
-          type="text" 
-          placeholder="Buscar por e-mail, OS ou cliente..." 
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            if (e.target.value) {
-              setSearchParams({ email: e.target.value });
-            } else {
-              setSearchParams({});
-            }
-          }}
-          className="w-full md:w-1/3 h-10 px-4 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 outline-none focus:border-purple-500 transition-colors shadow-inner"
-        />
-        {hasSingleResult && singleResultCard && (
-          <button 
-            onClick={() => { setSearchParams({ os: singleResultCard.shortCode }); setSelectedOrder(singleResultCard); }}
-            className="h-10 px-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-purple-950/40"
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-[280px] max-w-xl">
+          <input 
+            type="text" 
+            placeholder="Buscar por e-mail, OS ou cliente..." 
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value) {
+                setSearchParams({ email: e.target.value });
+              } else {
+                setSearchParams({});
+              }
+            }}
+            className="w-full h-10 px-4 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 outline-none focus:border-purple-500 transition-colors shadow-inner"
+          />
+          {hasSingleResult && singleResultCard && (
+            <button 
+              onClick={() => { setSearchParams({ os: singleResultCard.shortCode }); setSelectedOrder(singleResultCard); }}
+              className="h-10 px-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-purple-950/40 whitespace-nowrap cursor-pointer"
+            >
+              Abrir OS Direto 🚀
+            </button>
+          )}
+        </div>
+
+        {totalCardsCount > 0 && (
+          <button
+            type="button"
+            onClick={handleClearKanban}
+            className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/40 transition-colors flex items-center gap-1.5 cursor-pointer ml-auto"
           >
-            Abrir OS Direto 🚀
+            🗑️ Limpar Kanban ({totalCardsCount})
           </button>
         )}
       </div>
@@ -197,7 +196,7 @@ export function KanbanBoard() {
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               onClick={() => { setSearchParams({ os: card.shortCode }); setSelectedOrder(card); }}
-                              className={`bg-gray-900 p-3 rounded-lg border cursor-pointer transition-shadow ${
+                              className={`bg-gray-900 p-3 rounded-lg border cursor-pointer transition-shadow group/card ${
                                 snapshot.isDragging ? 'border-purple-500 shadow-lg shadow-purple-900/30 scale-105' : 'border-gray-700 hover:border-gray-500 hover:shadow-md'
                               }`}
                             >
@@ -205,7 +204,24 @@ export function KanbanBoard() {
                                 <span className="text-xs font-mono font-bold text-purple-300 bg-purple-950/50 px-1.5 py-0.5 rounded">
                                   {card.shortCode}
                                 </span>
-                                <span className="text-[10px] text-gray-500">Há 10 min</span>
+                                
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] text-gray-500">Recente</span>
+                                  <button
+                                    type="button"
+                                    title="Excluir OS"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm(`Excluir a ${card.shortCode} de ${card.customerName}?`)) {
+                                        deleteKanbanCard(card.id);
+                                        toast.success(`OS ${card.shortCode} excluída.`);
+                                      }
+                                    }}
+                                    className="w-5 h-5 rounded hover:bg-red-950/60 text-gray-500 hover:text-red-400 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
                               </div>
                               
                               <div className="flex flex-col gap-0.5">

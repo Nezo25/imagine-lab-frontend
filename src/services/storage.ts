@@ -50,13 +50,28 @@ export interface Filament {
 }
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'imaginelab_prod_products_v5',
-  ORDERS: 'imaginelab_prod_orders_v5',
-  QUOTES: 'imaginelab_prod_quotes_v5',
-  FILAMENTS: 'imaginelab_prod_filaments_v5',
-  INITIALIZED: 'imaginelab_prod_initialized_v5',
-  FEATURED_ID: 'imaginelab_featured_product_id_v5'
+  PRODUCTS: 'imaginelab_prod_products_v6',
+  ORDERS: 'imaginelab_prod_orders_v6',
+  QUOTES: 'imaginelab_prod_quotes_v6',
+  FILAMENTS: 'imaginelab_prod_filaments_v6',
+  INITIALIZED: 'imaginelab_prod_initialized_v6',
+  FEATURED_ID: 'imaginelab_featured_product_id_v6'
 };
+
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('imaginelab_prod_products_v1');
+    localStorage.removeItem('imaginelab_prod_products_v2');
+    localStorage.removeItem('imaginelab_prod_products_v3');
+    localStorage.removeItem('imaginelab_prod_products_v4');
+    localStorage.removeItem('imaginelab_prod_products_v5');
+    localStorage.removeItem('forja_orders_cache_v1');
+    localStorage.removeItem('forja_orders_v2');
+    localStorage.removeItem('forja_filaments');
+    localStorage.removeItem('forja_quotes');
+    localStorage.removeItem('forja_products');
+  } catch {}
+}
 
 export function getFeaturedProductId(): string | null {
   try {
@@ -240,7 +255,16 @@ export function isFakeMockProduct(p: any): boolean {
     'suporte pokébola',
     'suporte pokebola',
     'dialga',
-    'chico'
+    'chico',
+    'link yarn',
+    'zelda',
+    'brasão cabeça de lobo',
+    'brasao cabeca de lobo',
+    'witcher',
+    'grogu',
+    'baby yoda',
+    'luminária pendente cogumelo',
+    'super mario'
   ];
   if (forjaChicoProducts.some(name => nameLower.includes(name))) return true;
   if (p.category === 'TCG' || p.category === 'FIGURE_POKEMON' || p.category === 'Figures Pokémon') return true;
@@ -255,22 +279,14 @@ export function getStoredProducts(): Product[] {
       const parsed = JSON.parse(local);
       if (Array.isArray(parsed)) {
         const clean = parsed.filter(p => !isFakeMockProduct(p));
-        if (clean.length > 0) {
-          return consolidateProducts(clean.map(sanitizeProduct));
-        }
+        return consolidateProducts(clean.map(sanitizeProduct));
       }
     }
   } catch (e) {
     console.error('Erro ao ler produtos:', e);
   }
-  // Se o storage estiver vazio (primeiro acesso), inicializa com o catálogo exclusivo da ImagineLab
-  const initial = products.length > 0 ? consolidateProducts(products.map(sanitizeProduct)) : [];
-  try {
-    if (typeof window !== 'undefined' && initial.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(initial));
-    }
-  } catch {}
-  return initial;
+  // Se o storage estiver vazio, retorna lista vazia para a ImagineLab cadastrar seus próprios produtos
+  return [];
 }
 
 export function saveProductsToStorage(productsList: Product[]): void {
@@ -444,23 +460,6 @@ export function saveFilamentsToStorage(filaments: Filament[]): void {
 }
 
 export async function fetchRemoteFilaments(): Promise<Filament[]> {
-  try {
-    const data: any = await fetchApi('/admin/filaments');
-    if (Array.isArray(data)) {
-      const mapped = data.map((f: any) => ({
-        id: f.id ? f.id.toString() : 'fil_' + Math.random().toString(36).substring(2, 6),
-        color: f.color || f.colorName || 'PLA',
-        material: f.material || f.materialType || 'PLA',
-        stockGrams: parseFloat(f.stockGrams) || 0,
-        minStockGrams: parseFloat(f.minStockGrams) || 300,
-          hexCode: f.hexCode,
-        }));
-      saveFilamentsToStorage(mapped);
-      return mapped;
-    }
-  } catch (err) {
-    console.warn('API /admin/filaments não respondeu:', err);
-  }
   return getStoredFilaments();
 }
 
@@ -477,23 +476,6 @@ export async function saveFilament(data: { color: string; material: string; stoc
 
   const updated = [newFilament, ...current];
   saveFilamentsToStorage(updated);
-
-  try {
-    const saved: any = await fetchApi('/admin/filaments', {
-      method: 'POST',
-      body: JSON.stringify({
-        color: data.color.trim(),
-        material: data.material.trim(),
-        stockGrams: data.stockGrams || 0,
-        minStockGrams: data.minStockGrams || 300,
-          hexCode: data.hexCode
-        })
-    });
-    if (saved?.id) {
-      newFilament.id = saved.id.toString();
-      saveFilamentsToStorage(getStoredFilaments().map(f => f.id === newFilament.id ? newFilament : f));
-    }
-  } catch (err) {}
   return newFilament;
 }
 
@@ -501,23 +483,12 @@ export async function updateFilamentStock(id: string, newStock: number): Promise
   const current = getStoredFilaments();
   const updated = current.map(f => f.id === id ? { ...f, stockGrams: Math.max(0, newStock) } : f);
   saveFilamentsToStorage(updated);
-
-  try {
-    await fetchApi(`/admin/filaments/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ stockGrams: newStock })
-    });
-  } catch (err) {}
 }
 
 export async function deleteFilament(id: string): Promise<void> {
   const current = getStoredFilaments();
   const updated = current.filter(f => f.id !== id);
   saveFilamentsToStorage(updated);
-
-  try {
-    await fetchApi(`/admin/filaments/${id}`, { method: 'DELETE' });
-  } catch (err) {}
 }
 
 // ------------------- PEDIDOS (SEM MOCKS) -------------------
@@ -527,7 +498,12 @@ export function getStoredOrders(): Order[] {
     const local = localStorage.getItem(STORAGE_KEYS.ORDERS);
     if (local !== null) {
       const parsed = JSON.parse(local);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(o => {
+          const str = JSON.stringify(o).toLowerCase();
+          return !str.includes('scorbunny') && !str.includes('chico') && !str.includes('zorua') && !str.includes('guilherme cataldi');
+        });
+      }
     }
   } catch (e) {}
   return []; // NUNCA restaura mock!
@@ -541,23 +517,6 @@ export function saveOrdersToStorage(orders: Order[]): void {
 }
 
 export async function fetchRemoteOrders(): Promise<Order[]> {
-  try {
-    const data: any = await fetchApi('/orders');
-    if (Array.isArray(data)) {
-      const mapped = data.map((o: any) => ({
-        id: o.id ? '#PED-' + o.id.toString() : '#PED-' + Math.floor(1000 + Math.random() * 9000),
-        cliente: o.customerName || o.cliente || 'Cliente',
-        produto: o.productName || o.produto || 'Figure',
-        data: safeFormatDate(o.createdAt),
-        valor: typeof o.totalAmount === 'number' ? formatPrice(o.totalAmount) : (o.valor || '0,00'),
-        status: o.status || 'Aguardando pgto',
-      }));
-      saveOrdersToStorage(mapped);
-      return mapped;
-    }
-  } catch (err) {
-    console.warn('API /orders não respondeu:', err);
-  }
   return getStoredOrders();
 }
 
@@ -574,17 +533,6 @@ export async function addOrder(order: Partial<Order>): Promise<Order> {
     telefone: order.telefone
   };
   saveOrdersToStorage([newOrder, ...current]);
-
-  try {
-    await fetchApi('/orders', {
-      method: 'POST',
-      body: JSON.stringify({
-        customerName: newOrder.cliente,
-        totalAmount: parsePrice(newOrder.valor),
-        status: newOrder.status,
-      })
-    });
-  } catch (err) {}
   return newOrder;
 }
 
@@ -592,25 +540,12 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
   const current = getStoredOrders();
   const updated = current.map(o => o.id === id ? { ...o, status } : o);
   saveOrdersToStorage(updated);
-
-  try {
-    const cleanId = id.replace('#PED-', '');
-    await fetchApi(`/orders/${cleanId}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status })
-    });
-  } catch (err) {}
 }
 
 export async function deleteOrder(id: string): Promise<void> {
   const current = getStoredOrders();
   const updated = current.filter(o => o.id !== id);
   saveOrdersToStorage(updated);
-
-  try {
-    const cleanId = id.replace('#PED-', '');
-    await fetchApi(`/orders/${cleanId}`, { method: 'DELETE' });
-  } catch (err) {}
 }
 
 // ------------------- CÁLCULO DINÂMICO DE VENDAS -------------------
@@ -703,25 +638,6 @@ export function saveQuotesToStorage(quotes: Quote[]): void {
 }
 
 export async function fetchRemoteQuotes(): Promise<Quote[]> {
-  try {
-    const data: any = await fetchApi('/quotes');
-    if (Array.isArray(data)) {
-      const mapped = data.map((q: any) => ({
-        id: '#S' + (q.id || Math.floor(10 + Math.random() * 900)).toString().padStart(3, '0'),
-        realId: q.id,
-        cliente: q.customerName || 'Cliente',
-        arquivo: q.fileName || q.stlUrl || 'modelo.stl',
-        status: q.status || 'Aguardando análise',
-        data: safeFormatDate(q.createdAt),
-        contato: q.contact,
-        precoEstimado: q.finalPrice,
-      }));
-      saveQuotesToStorage(mapped);
-      return mapped;
-    }
-  } catch (err) {
-    console.warn('API /quotes não respondeu:', err);
-  }
   return getStoredQuotes();
 }
 
@@ -740,17 +656,6 @@ export async function addQuote(quote: Partial<Quote>): Promise<Quote> {
     precoEstimado: quote.precoEstimado,
   };
   saveQuotesToStorage([newQuote, ...current]);
-
-  try {
-    await fetchApi('/quotes', {
-      method: 'POST',
-      body: JSON.stringify({
-        customerName: newQuote.cliente,
-        stlUrl: newQuote.arquivo,
-        status: newQuote.status,
-      })
-    });
-  } catch (err) {}
   return newQuote;
 }
 
@@ -758,24 +663,10 @@ export async function updateQuote(id: string, updates: Partial<Quote>): Promise<
   const current = getStoredQuotes();
   const updated = current.map(q => q.id === id ? { ...q, ...updates } : q);
   saveQuotesToStorage(updated);
-
-  try {
-    const realId = updates.realId || id.replace('#S', '').replace(/^0+/, '');
-    await fetchApi(`/quotes/${realId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates)
-    });
-  } catch (err) {}
 }
 
 export async function deleteQuote(id: string): Promise<void> {
   const current = getStoredQuotes();
-  const target = current.find(q => q.id === id);
   const updated = current.filter(q => q.id !== id);
   saveQuotesToStorage(updated);
-
-  try {
-    const realId = target?.realId || id.replace('#S', '').replace(/^0+/, '');
-    await fetchApi(`/quotes/${realId}`, { method: 'DELETE' });
-  } catch (err) {}
 }

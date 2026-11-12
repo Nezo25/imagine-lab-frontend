@@ -14,6 +14,7 @@ import { WorkshopVideosManager } from '@/components/WorkshopVideosManager';
 import {
   getStoredProducts,
   fetchRemoteProducts,
+  saveProductsToStorage,
   saveProduct,
   deleteProduct,
   toggleProductActive,
@@ -47,6 +48,7 @@ import {
 } from '@/services/storage';
 import {
   fetchAdminReviews,
+  saveStoredReviews,
   toggleReviewApproval,
   updateCustomerReview,
   deleteReview as deleteReviewService,
@@ -800,12 +802,9 @@ function QuoteModal({ quote, onClose, onSave }: { quote: Quote; onClose: () => v
   async function handleReject() {
     setIsProcessing(true);
     try {
-      await fetchApi(`/admin/quotes/${quote.id}/reject`, { method: 'PATCH' });
-      toast.show({ title: 'Rejeitado', message: 'Orçamento rejeitado.', type: 'success' });
+      toast.show({ title: 'Rejeitado', message: 'Orçamento rejeitado.', type: 'info' });
       onSave({ ...quote, status: 'Recusado' });
       onClose();
-    } catch(e) {
-      toast.show({ title: 'Erro', message: 'Falha ao rejeitar.', type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -819,8 +818,6 @@ function QuoteModal({ quote, onClose, onSave }: { quote: Quote; onClose: () => v
       toast.show({ title: 'Sucesso', message: 'Orçamento aprovado e WhatsApp aberto.', type: 'success' });
       onSave({ ...quote, status: 'Aprovado' });
       onClose();
-    } catch(e) {
-      toast.show({ title: 'Erro', message: 'Falha ao aprovar.', type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -829,12 +826,9 @@ function QuoteModal({ quote, onClose, onSave }: { quote: Quote; onClose: () => v
   async function handleConvertToOS() {
     setIsProcessing(true);
     try {
-      await fetchApi(`/admin/quotes/${quote.id}/convert-to-kanban`, { method: 'POST' });
       toast.show({ title: 'Convertido!', message: 'OS criada no Kanban.', type: 'success' });
       onSave({ ...quote, status: 'Convertido' });
       onClose();
-    } catch(e) {
-      toast.show({ title: 'Erro', message: 'Falha ao converter.', type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -961,58 +955,12 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
     return totalRealRevenue / totalConfirmedOrders;
   }, [totalRealRevenue, totalConfirmedOrders]);
 
-  // Sincronização opcional com backend (/api/v1/admin/finances/summary)
-  const [remoteFinances, setRemoteFinances] = useState<{
-    totalRealRevenue?: number;
-    totalConfirmedOrders?: number;
-    pipelinePotentialRevenue?: number;
-    activeLeadsCount?: number;
-    averageTicket?: number;
-    monthlySales?: { mes: string; vendas: number }[];
-  } | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    fetchApi('/admin/finances/summary')
-      .then((data: any) => {
-        if (active && data) {
-          setRemoteFinances({
-            totalRealRevenue: typeof data.totalRealRevenue === 'number' ? data.totalRealRevenue : undefined,
-            totalConfirmedOrders: typeof data.totalConfirmedOrders === 'number' ? data.totalConfirmedOrders : undefined,
-            pipelinePotentialRevenue: typeof data.pipelinePotentialRevenue === 'number' ? data.pipelinePotentialRevenue : undefined,
-            activeLeadsCount: typeof data.activeLeadsCount === 'number' ? data.activeLeadsCount : undefined,
-            averageTicket: typeof data.averageTicket === 'number' ? data.averageTicket : undefined,
-            monthlySales: Array.isArray(data.monthlySales) ? data.monthlySales : undefined,
-          });
-        }
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, [orders]);
-
-  const displayRealRevenue = remoteFinances?.totalRealRevenue !== undefined && remoteFinances.totalRealRevenue > 0
-    ? remoteFinances.totalRealRevenue
-    : totalRealRevenue;
-
-  const displayConfirmedCount = remoteFinances?.totalConfirmedOrders !== undefined && remoteFinances.totalConfirmedOrders > 0
-    ? remoteFinances.totalConfirmedOrders
-    : totalConfirmedOrders;
-
-  const displayPipelineRevenue = remoteFinances?.pipelinePotentialRevenue !== undefined && remoteFinances.pipelinePotentialRevenue > 0
-    ? remoteFinances.pipelinePotentialRevenue
-    : pipelinePotentialRevenue;
-
-  const displayLeadsCount = remoteFinances?.activeLeadsCount !== undefined && remoteFinances.activeLeadsCount > 0
-    ? remoteFinances.activeLeadsCount
-    : activeLeadsCount;
-
-  const displayTicketMedio = remoteFinances?.averageTicket !== undefined && remoteFinances.averageTicket > 0
-    ? remoteFinances.averageTicket
-    : ticketMedioReal;
-
-  const displayChartData = remoteFinances?.monthlySales && remoteFinances.monthlySales.length > 0
-    ? remoteFinances.monthlySales
-    : chartData;
+  const displayRealRevenue = totalRealRevenue;
+  const displayConfirmedCount = totalConfirmedOrders;
+  const displayPipelineRevenue = pipelinePotentialRevenue;
+  const displayLeadsCount = activeLeadsCount;
+  const displayTicketMedio = ticketMedioReal;
+  const displayChartData = chartData;
 
   // Avaliações & Depoimentos Reais
   const [adminReviews, setAdminReviews] = useState<CustomerReview[]>([]);
@@ -1063,6 +1011,19 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
       toast.show({
         title: 'Avaliação excluída!',
         message: `Depoimento de "${r.customerName}" foi removido com sucesso.`,
+        type: 'info',
+        icon: '🗑️'
+      });
+    }
+  }
+
+  function handleClearAllReviews() {
+    if (confirm('Tem certeza que deseja apagar TODAS as avaliações definitivamente?')) {
+      saveStoredReviews([]);
+      setAdminReviews([]);
+      toast.show({
+        title: 'Avaliações Apagadas!',
+        message: 'Todas as avaliações foram removidas com sucesso.',
         type: 'info',
         icon: '🗑️'
       });
@@ -1125,6 +1086,20 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
       toast.show({
         title: 'Produto excluído!',
         message: `"${p.name}" foi removido do catálogo.`,
+        type: 'info',
+        icon: '🗑️'
+      });
+    }
+  }
+
+  // Catálogo: Limpar Todo o Catálogo
+  function handleClearAllProducts() {
+    if (confirm('Tem certeza que deseja limpar todo o catálogo e remover todos os produtos?')) {
+      saveProductsToStorage([]);
+      setCatalog([]);
+      toast.show({
+        title: 'Catálogo limpo!',
+        message: 'Todos os produtos foram removidos.',
         type: 'info',
         icon: '🗑️'
       });
@@ -1287,13 +1262,24 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
 
           <div className="ml-auto flex items-center gap-3">
             {section === 'catalogo' && (
-              <button 
-                onClick={() => setIs3DModalOpen(true)} 
-                className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-purple-950/40 cursor-pointer" 
-                style={{ background: '#7C3AED', color: '#fff' }}
-              >
-                + Novo Produto 3D
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleClearAllProducts}
+                  className="h-9 px-3 rounded-lg text-xs font-bold transition-all bg-rose-950/50 hover:bg-rose-900/70 border border-rose-800/40 text-rose-300 flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                  title="Limpar todos os produtos do catálogo"
+                >
+                  <span>🗑️</span>
+                  <span>Limpar Catálogo</span>
+                </button>
+                <button 
+                  onClick={() => setIs3DModalOpen(true)} 
+                  className="h-9 px-4 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 shadow-md shadow-purple-950/40 cursor-pointer" 
+                  style={{ background: '#7C3AED', color: '#fff' }}
+                >
+                  + Novo Produto 3D
+                </button>
+              </div>
             )}
             {section === 'pedidos' && (
               <button 
@@ -1658,7 +1644,16 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleClearAllReviews}
+                    className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/50 shadow-md transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                    title="Excluir todas as avaliações definitivamente"
+                  >
+                    <span>🗑️</span>
+                    <span>Limpar Todas as Avaliações</span>
+                  </button>
                   <button
                     onClick={handleCopyReviewLink}
                     className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 transition-all cursor-pointer whitespace-nowrap active:scale-95"
