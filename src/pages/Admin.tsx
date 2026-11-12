@@ -1095,6 +1095,9 @@ export default function Admin({ defaultSection = 'catalogo' }: { defaultSection?
   // Catálogo: Limpar Todo o Catálogo
   function handleClearAllProducts() {
     if (confirm('Tem certeza que deseja limpar todo o catálogo e remover todos os produtos?')) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('imaginelab_catalog_cleared', 'true');
+      }
       saveProductsToStorage([]);
       setCatalog([]);
       toast.show({

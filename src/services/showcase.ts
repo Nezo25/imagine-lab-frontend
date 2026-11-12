@@ -105,16 +105,7 @@ export function isForeignChicoItem(item: any): boolean {
     str.includes('garchomp') ||
     str.includes('dialga') ||
     str.includes('demon slayer') ||
-    str.includes('figure da semana') ||
-    str.includes('link yarn') ||
-    str.includes('zelda') ||
-    str.includes('cabeça de lobo') ||
-    str.includes('cabeca de lobo') ||
-    str.includes('witcher') ||
-    str.includes('grogu') ||
-    str.includes('baby yoda') ||
-    str.includes('super mario') ||
-    str.includes('mushroom-lamp')
+    str.includes('figure da semana')
   );
 }
 
@@ -159,15 +150,17 @@ export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicSho
     }
   }
 
+  const pMushroom = activeProducts.find(p => p.id === 'super-mario-mushroom-lamp') || activeProducts[3];
+
   return {
     slots,
     mysteryDrop: {
       slotNumber: 4,
       title: 'Drop Secreto ImagineLab',
-      subtitle: 'Próximo lançamento exclusivo em impressão 3D',
-      category: 'GEEK_GENERAL',
-      universe: 'POP_CULTURE_GEEK',
-      imageUrl: activeProducts[3]?.image || activeProducts[0]?.image || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+      subtitle: 'Luminária Pendente Cogumelo em impressão 3D',
+      category: 'DIORAMA',
+      universe: 'DIORAMA_ACCESSORY',
+      imageUrl: pMushroom?.image || '/images/products/super-mario-mushroom-lamp.png',
       whatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
     },
   };

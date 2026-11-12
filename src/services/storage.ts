@@ -255,16 +255,7 @@ export function isFakeMockProduct(p: any): boolean {
     'suporte pokébola',
     'suporte pokebola',
     'dialga',
-    'chico',
-    'link yarn',
-    'zelda',
-    'brasão cabeça de lobo',
-    'brasao cabeca de lobo',
-    'witcher',
-    'grogu',
-    'baby yoda',
-    'luminária pendente cogumelo',
-    'super mario'
+    'chico'
   ];
   if (forjaChicoProducts.some(name => nameLower.includes(name))) return true;
   if (p.category === 'TCG' || p.category === 'FIGURE_POKEMON' || p.category === 'Figures Pokémon') return true;
@@ -279,14 +270,25 @@ export function getStoredProducts(): Product[] {
       const parsed = JSON.parse(local);
       if (Array.isArray(parsed)) {
         const clean = parsed.filter(p => !isFakeMockProduct(p));
-        return consolidateProducts(clean.map(sanitizeProduct));
+        if (clean.length > 0) {
+          return consolidateProducts(clean.map(sanitizeProduct));
+        }
+        if (localStorage.getItem('imaginelab_catalog_cleared') === 'true') {
+          return [];
+        }
       }
     }
   } catch (e) {
     console.error('Erro ao ler produtos:', e);
   }
-  // Se o storage estiver vazio, retorna lista vazia para a ImagineLab cadastrar seus próprios produtos
-  return [];
+  // Se o storage estiver vazio, inicializa com os 4 produtos oficiais da ImagineLab
+  const initial = products.length > 0 ? consolidateProducts(products.map(sanitizeProduct)) : [];
+  try {
+    if (typeof window !== 'undefined' && initial.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(initial));
+    }
+  } catch {}
+  return initial;
 }
 
 export function saveProductsToStorage(productsList: Product[]): void {
@@ -294,6 +296,9 @@ export function saveProductsToStorage(productsList: Product[]): void {
     const cleanList = productsList.filter(p => !isFakeMockProduct(p));
     const consolidated = consolidateProducts(cleanList.map(sanitizeProduct));
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(consolidated));
+    if (consolidated.length > 0) {
+      localStorage.removeItem('imaginelab_catalog_cleared');
+    }
     window.dispatchEvent(new Event('imaginelab_products_updated'));
   } catch (e) {
     console.error('Erro ao salvar produtos:', e);
