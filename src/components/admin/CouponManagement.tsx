@@ -142,7 +142,7 @@ export function CouponManagement() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-600/20 flex items-center gap-2 cursor-pointer transition-all active:scale-95 self-start sm:self-auto"
+          className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-600/20 flex items-center gap-2 cursor-pointer transition-all active:scale-95 self-start sm:self-auto"
         >
           <span>+</span> Novo Cupom
         </button>
@@ -152,7 +152,7 @@ export function CouponManagement() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Cupons Ativos */}
         <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center text-xl shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl shrink-0">
             🏷️
           </div>
           <div>
@@ -273,7 +273,7 @@ export function CouponManagement() {
                           )}
 
                           {coupon.isFirstPurchaseOnly && (
-                            <span className="px-2 py-0.5 rounded bg-orange-950/80 text-orange-300 border border-orange-500/40 text-[10px] font-bold">
+                            <span className="px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-500/40 text-[10px] font-bold">
                               ⭐ 1ª Compra
                             </span>
                           )}
@@ -293,7 +293,7 @@ export function CouponManagement() {
                             <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
                               <div
                                 className={`h-full transition-all duration-300 ${
-                                  isMaxedOut ? 'bg-red-500' : usagePercent > 75 ? 'bg-amber-500' : 'bg-orange-500'
+                                  isMaxedOut ? 'bg-red-500' : usagePercent > 75 ? 'bg-amber-500' : 'bg-purple-500'
                                 }`}
                                 style={{ width: `${usagePercent}%` }}
                               />

@@ -152,7 +152,7 @@ export function FeaturedPromotionsCarousel({
 
   return (
     <div
-      className="relative w-full max-w-md aspect-[4/5] rounded-2xl overflow-hidden bg-[#1E1E1E] border border-[#2E2E2E] hover:border-orange-500/40 shadow-2xl transition-all duration-300 group select-none"
+      className="relative w-full max-w-md aspect-[4/5] rounded-2xl overflow-hidden bg-[#1E1E1E] border border-[#2E2E2E] hover:border-purple-500/40 shadow-2xl transition-all duration-300 group select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -174,7 +174,7 @@ export function FeaturedPromotionsCarousel({
           const discountPct = Math.round((discountDiff / origPrice) * 100);
           const badgeText = slot.badgeLabel && slot.badgeLabel !== '⚡ OFERTA DE BANCADA' && slot.badgeLabel !== '⭐ PEÇA DA SEMANA'
             ? slot.badgeLabel
-            : '🔥 OFERTA DESTAQUE DA OFICINA';
+            : '🔥 DESTAQUE IMAGINELAB';
 
           const universeKey = toProductUniverse(slot.universe, slot.name || undefined, slot.category || undefined);
           const universeInfo = UNIVERSE_CONFIG[universeKey];
@@ -188,7 +188,7 @@ export function FeaturedPromotionsCarousel({
               {/* Foto da Figure em Alta Resolução */}
               <img
                 src={slot.imageUrl || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop'}
-                alt={slot.name || 'Figure'}
+                alt={slot.name || 'Produto 3D'}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
 
@@ -198,10 +198,10 @@ export function FeaturedPromotionsCarousel({
               {/* Top Badges do Slide com Universo e Oferta */}
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/80 backdrop-blur-md text-amber-300 border border-amber-500/50 flex items-center gap-1 shadow-md">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/80 backdrop-blur-md text-purple-300 border border-purple-500/50 flex items-center gap-1 shadow-md">
                     <span>{universeInfo.badge}</span>
                   </span>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/35 text-orange-200 border border-orange-500/60 backdrop-blur-md flex items-center gap-1.5 shadow-md">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/35 text-purple-200 border border-purple-500/60 backdrop-blur-md flex items-center gap-1.5 shadow-md">
                     <span>{badgeText}</span>
                     <span className="font-extrabold text-white">(-R$ {discountDiff.toFixed(0)})</span>
                   </span>
@@ -216,7 +216,7 @@ export function FeaturedPromotionsCarousel({
               <div className="absolute bottom-5 left-5 right-24 z-10 flex flex-col gap-1.5">
                 {/* Element Badges & Escala */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold text-amber-300 bg-black/70 px-2 py-0.5 rounded-full border border-amber-500/30">
+                  <span className="text-[10px] font-bold text-purple-300 bg-black/70 px-2 py-0.5 rounded-full border border-purple-500/30">
                     {universeInfo.shortBadge}
                   </span>
                   {slot.primaryType && universeKey === 'POKEMON_TCG' && <TypeBadge type={slot.primaryType as any} />}
@@ -233,7 +233,7 @@ export function FeaturedPromotionsCarousel({
                   <span className="text-xs line-through text-slate-500 font-semibold">
                     R$ {origPrice.toFixed(2).replace('.', ',')}
                   </span>
-                  <span className="text-xl font-extrabold text-orange-500 bg-orange-950/90 px-2.5 py-0.5 rounded-lg border border-orange-500/50 shadow-md">
+                  <span className="text-xl font-extrabold text-purple-400 bg-purple-950/90 px-2.5 py-0.5 rounded-lg border border-purple-500/50 shadow-md">
                     R$ {promoPrice.toFixed(2).replace('.', ',')}
                   </span>
                   <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40">
@@ -242,19 +242,19 @@ export function FeaturedPromotionsCarousel({
                 </div>
 
                 {/* Nome da Peça */}
-                <h3 className="font-display text-2xl sm:text-3xl text-white uppercase tracking-wide line-clamp-1 group-hover:text-orange-300 transition-colors">
+                <h3 className="font-display text-2xl sm:text-3xl text-white uppercase tracking-wide line-clamp-1 group-hover:text-purple-300 transition-colors">
                   {slot.name}
                 </h3>
 
-                {/* Justificativa Explícita da Oferta de Bancada */}
-                <p className="text-[10px] text-amber-300/90 font-medium leading-tight flex items-center gap-1">
-                  <span className="text-orange-400">⚡</span>
+                {/* Justificativa Explícita da Oferta */}
+                <p className="text-[10px] text-purple-300/90 font-medium leading-tight flex items-center gap-1">
+                  <span className="text-purple-400">⚡</span>
                   <span>Preço especial válido exclusivamente para esta unidade da bancada</span>
                 </p>
 
                 {/* Botão de Ação do Card */}
                 <div className="pt-1">
-                  <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-orange-400 group-hover:text-orange-300 transition-colors">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-400 group-hover:text-purple-300 transition-colors">
                     <span>Garantir Oferta de Destaque</span>
                     <span className="text-sm">→</span>
                   </span>
@@ -284,7 +284,7 @@ export function FeaturedPromotionsCarousel({
           e.stopPropagation();
           prevSlide();
         }}
-        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#EA580C] text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 active:scale-90 z-20 cursor-pointer shadow-md"
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#7C3AED] text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 active:scale-90 z-20 cursor-pointer shadow-md"
         aria-label="Slide anterior"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
@@ -296,7 +296,7 @@ export function FeaturedPromotionsCarousel({
           e.stopPropagation();
           nextSlide();
         }}
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#EA580C] text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 active:scale-90 z-20 cursor-pointer shadow-md"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#7C3AED] text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 active:scale-90 z-20 cursor-pointer shadow-md"
         aria-label="Próximo slide"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>

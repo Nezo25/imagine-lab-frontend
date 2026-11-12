@@ -125,14 +125,14 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
           <div className="flex items-center gap-3">
             <div>
               <h2 className="text-xl font-black text-gray-100 flex items-center gap-2">
-                🔥 Ordem de Serviço <span className="text-orange-400 font-mono">{order.shortCode}</span>
+                🔥 Ordem de Serviço <span className="text-purple-400 font-mono">{order.shortCode}</span>
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[11px] font-semibold text-gray-400">
                   Total: <strong className="text-gray-200 font-mono">R$ {order.totalAmount.toFixed(2).replace('.', ',')}</strong>
                 </span>
                 <span className="text-gray-600">•</span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-orange-400 border border-gray-700">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-purple-400 border border-gray-700">
                   {order.kanbanColumn}
                 </span>
               </div>
@@ -190,7 +190,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                   <div key={idx} className="p-3.5 bg-gray-900 border border-gray-800 rounded-xl flex flex-col gap-2.5">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-gray-100 text-sm flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-gray-800 text-orange-400 border border-gray-700 text-xs font-mono font-bold">
+                        <span className="px-2 py-0.5 rounded bg-gray-800 text-purple-400 border border-gray-700 text-xs font-mono font-bold">
                           {item.quantity}x
                         </span>
                         {item.itemName}
@@ -264,7 +264,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                   onBlur={handleSaveNotes}
                   placeholder="Ex: Usar suporte em árvore no braço esquerdo, bico Bambu 0.4mm, infill 15%..."
                   rows={2}
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
                 <button
                   type="button"
@@ -314,7 +314,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
               <button 
                 onClick={handleApprove}
                 disabled={approving}
-                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-extrabold bg-orange-500 hover:bg-orange-600 text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-950/50 hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#7C3AED] hover:bg-[#6D28D9] text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-950/50 hover:scale-[1.02] active:scale-[0.98]"
               >
                 {approving ? 'Aprovando...' : 'Aprovar e Enviar para Fila 3D 🚀'}
               </button>

@@ -36,7 +36,7 @@ export function ReviewsSection({ onOpenSubmitReview }: Props) {
   return (
     <section id="avaliacoes" className="relative w-full max-w-full py-16 md:py-24 px-4 md:px-8 bg-[#090D16] border-b border-[#262626] text-white overflow-hidden">
       {/* Luz ambiente de fundo sutil */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-[1440px] mx-auto relative z-10">
@@ -74,7 +74,7 @@ export function ReviewsSection({ onOpenSubmitReview }: Props) {
         {/* Estado Vazio Elegante (Sem avaliações publicadas) */}
         {!loading && reviews.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-3xl bg-[#0F172A]/50 border border-slate-800 max-w-2xl mx-auto shadow-inner">
-            <div className="w-14 h-14 rounded-2xl bg-orange-950/50 border border-orange-800/40 flex items-center justify-center text-2xl mb-4 text-orange-400 shadow-md">
+            <div className="w-14 h-14 rounded-2xl bg-purple-950/50 border border-purple-800/40 flex items-center justify-center text-2xl mb-4 text-purple-400 shadow-md">
               💬
             </div>
             <h3 className="text-lg md:text-xl font-bold text-white mb-2">
@@ -143,7 +143,7 @@ export function ReviewsSection({ onOpenSubmitReview }: Props) {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded-md truncate max-w-full">
+                    <span className="text-[10px] font-bold text-purple-400 bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded-md truncate max-w-full">
                       {review.productName}
                     </span>
                   </div>

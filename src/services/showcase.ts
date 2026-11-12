@@ -78,7 +78,37 @@ export interface ShowcaseSlotUpdateRequest {
   mysteryWhatsappText?: string | null;
 }
 
-const LOCAL_STORAGE_SHOWCASE_KEY = 'imaginelab_showcase_slots_cache_v2';
+const LOCAL_STORAGE_SHOWCASE_KEY = 'imaginelab_showcase_slots_v4';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v4';
+
+export function isForeignChicoItem(item: any): boolean {
+  if (!item) return false;
+  const str = JSON.stringify(item).toLowerCase();
+  return (
+    str.includes('chico') ||
+    str.includes('berserk') ||
+    str.includes('pokébola') ||
+    str.includes('pokebola') ||
+    str.includes('gengar') ||
+    str.includes('zorua') ||
+    str.includes('tepig') ||
+    str.includes('fennekin') ||
+    str.includes('mimikyu') ||
+    str.includes('scorbunny') ||
+    str.includes('litten') ||
+    str.includes('fuecoco') ||
+    str.includes('rayquaza') ||
+    str.includes('pikachu') ||
+    str.includes('charizard') ||
+    str.includes('bulbasaur') ||
+    str.includes('mewtwo') ||
+    str.includes('gyarados') ||
+    str.includes('garchomp') ||
+    str.includes('dialga') ||
+    str.includes('demon slayer') ||
+    str.includes('figure da semana')
+  );
+}
 
 /** Retorna vitrine pública montada exclusivamente a partir de produtos reais cadastrados */
 export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicShowcaseResponse {
@@ -129,87 +159,73 @@ export function getDefaultPublicShowcase(catalogProducts?: Product[]): PublicSho
       slotNumber: 4,
       title: 'Drop Secreto ImagineLab',
       subtitle: 'Próximo lançamento exclusivo em impressão 3D',
-      category: 'FIGURE_POKEMON',
-      universe: 'ANIME_MANGA',
-      imageUrl: pFirst?.image || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop',
+      category: 'GEEK_GENERAL',
+      universe: 'POP_CULTURE_GEEK',
+      imageUrl: activeProducts[3]?.image || pFirst?.image || '/images/products/super-mario-mushroom-lamp.png',
       whatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
     },
   };
 }
 
-/** Busca a vitrine pública do Hero da API com persistência segura */
+/** Busca a vitrine pública do Hero da API com persistência segura e isolamento total */
 export async function fetchPublicShowcase(catalog?: Product[]): Promise<PublicShowcaseResponse> {
+  // Purga chaves legadas antigas
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_slots_v3');
+    localStorage.removeItem('imaginelab_showcase_slots_cache_v2');
+  }
+
   try {
-    const cached = localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY);
-    let initialFallback: PublicShowcaseResponse;
+    const cached = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY) : null;
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (parsed && Array.isArray(parsed.slots)) {
-          // Higieniza resquícios de testes antigos
-          parsed.slots = parsed.slots.filter((s: any) => 
-            s && s.name && !s.name.includes('Figure da Semana') && (!s.imageUrl || !s.imageUrl.includes('placehold.co'))
-          );
+        if (parsed && Array.isArray(parsed.slots) && parsed.slots.length > 0 && !isForeignChicoItem(parsed)) {
+          if (parsed.mysteryDrop?.whatsappText?.toLowerCase().includes('chico')) {
+            parsed.mysteryDrop.whatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+          }
+          return parsed;
         }
-        initialFallback = parsed && parsed.slots && parsed.slots.length > 0 ? parsed : getDefaultPublicShowcase(catalog);
-      } catch {
-        initialFallback = getDefaultPublicShowcase(catalog);
-      }
-    } else {
-      initialFallback = getDefaultPublicShowcase(catalog);
+      } catch {}
     }
 
-    try {
-      const data = await fetchApi<PublicShowcaseResponse>('/showcase');
-      if (data && Array.isArray(data.slots) && data.slots.length > 0) {
-        localStorage.setItem(LOCAL_STORAGE_SHOWCASE_KEY, JSON.stringify(data));
-        return data;
-      }
-    } catch (apiErr) {
-      console.warn('API /showcase indisponível no momento:', apiErr);
+    const initialFallback = getDefaultPublicShowcase(catalog);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_SHOWCASE_KEY, JSON.stringify(initialFallback));
     }
-
     return initialFallback;
   } catch {
     return getDefaultPublicShowcase(catalog);
   }
 }
 
-const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_cache_v1';
-
 /** Busca os dados completos de administração dos slots com persistência real */
 export async function fetchAdminShowcase(catalog?: Product[]): Promise<AdminShowcaseSlot[]> {
+  // Purga chaves legadas antigas
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_admin_v3');
+    localStorage.removeItem('imaginelab_showcase_admin_cache_v1');
+  }
+
   // 1. Prioriza SEMPRE o cache local salvo pela administração da ImagineLab
   if (typeof window !== 'undefined') {
     const cached = localStorage.getItem(ADMIN_SHOWCASE_CACHE_KEY);
     if (cached) {
       try {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length === 4) {
+        const parsed: AdminShowcaseSlot[] = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length === 4 && !isForeignChicoItem(parsed)) {
+          parsed.forEach(s => {
+            if (s.mysteryWhatsappText?.toLowerCase().includes('chico')) {
+              s.mysteryWhatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+            }
+          });
           return parsed;
         }
       } catch {}
     }
   }
 
-  // 2. Tenta buscar da API remota caso não haja cache local
-  try {
-    const data = await fetchApi<AdminShowcaseSlot[]>('/admin/showcase');
-    if (Array.isArray(data) && data.length > 0) {
-      // Rejeita se contiver figures alheias (ex: Pokémon da Forja do Chico)
-      const hasForeign = data.some(s => s && s.productName && /zorua|tepig|fennekin|mimikyu|scorbunny|litten|fuecoco/i.test(s.productName));
-      if (!hasForeign) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(data));
-        }
-        return data;
-      }
-    }
-  } catch (err) {
-    console.warn('API /admin/showcase em modo local:', err);
-  }
-
-  // 3. Gera slots padrão a partir do catálogo exclusivo da ImagineLab
+  // 2. Gera slots padrão a partir do catálogo exclusivo da ImagineLab
   const fallback = getDefaultPublicShowcase(catalog);
   const initialSlots: AdminShowcaseSlot[] = [
     ...fallback.slots.map(s => ({
@@ -269,62 +285,63 @@ export async function updateShowcaseSlot(
       localStorage.setItem(ADMIN_SHOWCASE_CACHE_KEY, JSON.stringify(slots));
 
       // 2. Atualiza em tempo real a vitrine pública (para o Hero da Home)
-      const publicCached = localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY);
-      if (publicCached) {
-        try {
-          const pub = JSON.parse(publicCached);
-          if (pub && Array.isArray(pub.slots)) {
-            const pIdx = pub.slots.findIndex((s: any) => s.slotNumber === slotNumber);
-            if (pIdx !== -1) {
-              if (request.productId === null) {
-                pub.slots[pIdx] = {
-                  slotNumber,
-                  productId: null,
-                  name: null,
-                  imageUrl: null,
-                  originalPrice: null,
-                  promotionalPrice: null,
-                  discountAmount: 0,
-                  discountPercentage: 0,
-                  badgeLabel: null,
-                };
-              } else {
-                pub.slots[pIdx] = {
-                  ...pub.slots[pIdx],
-                  productId: request.productId,
-                  name: request.productName !== undefined ? request.productName : pub.slots[pIdx]?.name,
-                  category: request.productCategory !== undefined ? request.productCategory : pub.slots[pIdx]?.category,
-                  imageUrl: request.productImageUrl !== undefined ? request.productImageUrl : pub.slots[pIdx]?.imageUrl,
-                  originalPrice: request.originalPrice !== undefined ? request.originalPrice : pub.slots[pIdx]?.originalPrice,
-                  promotionalPrice: request.promotionalPrice !== undefined ? request.promotionalPrice : pub.slots[pIdx]?.promotionalPrice,
-                  discountAmount: request.discountAmount !== undefined ? request.discountAmount : pub.slots[pIdx]?.discountAmount,
-                  discountPercentage: request.discountPercentage !== undefined ? request.discountPercentage : pub.slots[pIdx]?.discountPercentage,
-                  badgeLabel: request.badgeLabel !== undefined ? request.badgeLabel : pub.slots[pIdx]?.badgeLabel,
-                  allowCouponStacking: request.allowCouponStacking !== undefined ? request.allowCouponStacking : pub.slots[pIdx]?.allowCouponStacking,
-                };
-              }
-              localStorage.setItem(LOCAL_STORAGE_SHOWCASE_KEY, JSON.stringify(pub));
-            }
-          }
-        } catch {}
+      let pub: PublicShowcaseResponse;
+      try {
+        const publicCached = localStorage.getItem(LOCAL_STORAGE_SHOWCASE_KEY);
+        pub = publicCached ? JSON.parse(publicCached) : getDefaultPublicShowcase();
+        if (!pub || !Array.isArray(pub.slots) || pub.slots.length === 0 || isForeignChicoItem(pub)) {
+          pub = getDefaultPublicShowcase();
+        }
+      } catch {
+        pub = getDefaultPublicShowcase();
       }
 
+      if (slotNumber >= 1 && slotNumber <= 3) {
+        const pIdx = pub.slots.findIndex((s: any) => s.slotNumber === slotNumber);
+        if (pIdx !== -1) {
+          if (request.productId === null) {
+            pub.slots[pIdx] = {
+              slotNumber,
+              productId: null,
+              name: null,
+              imageUrl: null,
+              originalPrice: null,
+              promotionalPrice: null,
+              discountAmount: 0,
+              discountPercentage: 0,
+              badgeLabel: null,
+            };
+          } else {
+            pub.slots[pIdx] = {
+              ...pub.slots[pIdx],
+              productId: request.productId,
+              name: request.productName !== undefined ? request.productName : pub.slots[pIdx]?.name,
+              category: request.productCategory !== undefined ? request.productCategory : pub.slots[pIdx]?.category,
+              imageUrl: request.productImageUrl !== undefined ? request.productImageUrl : pub.slots[pIdx]?.imageUrl,
+              originalPrice: request.originalPrice !== undefined ? request.originalPrice : pub.slots[pIdx]?.originalPrice,
+              promotionalPrice: request.promotionalPrice !== undefined ? request.promotionalPrice : pub.slots[pIdx]?.promotionalPrice,
+              discountAmount: request.discountAmount !== undefined ? request.discountAmount : pub.slots[pIdx]?.discountAmount,
+              discountPercentage: request.discountPercentage !== undefined ? request.discountPercentage : pub.slots[pIdx]?.discountPercentage,
+              badgeLabel: request.badgeLabel !== undefined ? request.badgeLabel : pub.slots[pIdx]?.badgeLabel,
+              allowCouponStacking: request.allowCouponStacking !== undefined ? request.allowCouponStacking : pub.slots[pIdx]?.allowCouponStacking,
+            };
+          }
+        }
+      } else if (slotNumber === 4 && pub.mysteryDrop) {
+        pub.mysteryDrop = {
+          ...pub.mysteryDrop,
+          title: request.mysteryTitle !== undefined && request.mysteryTitle !== null ? request.mysteryTitle : pub.mysteryDrop.title,
+          subtitle: request.mysterySubtitle !== undefined && request.mysterySubtitle !== null ? request.mysterySubtitle : pub.mysteryDrop.subtitle,
+          category: request.mysteryCategory !== undefined && request.mysteryCategory !== null ? request.mysteryCategory : pub.mysteryDrop.category,
+          imageUrl: request.mysteryImageUrl !== undefined && request.mysteryImageUrl !== null ? request.mysteryImageUrl : pub.mysteryDrop.imageUrl,
+          whatsappText: request.mysteryWhatsappText !== undefined && request.mysteryWhatsappText !== null ? request.mysteryWhatsappText : pub.mysteryDrop.whatsappText,
+        };
+      }
+
+      localStorage.setItem(LOCAL_STORAGE_SHOWCASE_KEY, JSON.stringify(pub));
       window.dispatchEvent(new Event('imaginelab_showcase_updated'));
     } catch (e) {
       console.error('Erro ao salvar localmente o slot da vitrine:', e);
-    }
-  }
-
-  // 3. Tenta sincronizar com o backend remoto se houver ID numérico
-  if (typeof request.productId === 'number') {
-    try {
-      const result = await fetchApi<AdminShowcaseSlot>(`/admin/showcase/slot/${slotNumber}`, {
-        method: 'PUT',
-        body: JSON.stringify(request),
-      });
-      return result;
-    } catch (err) {
-      console.warn(`Sync remoto do slot ${slotNumber} mantido localmente:`, err);
     }
   }
 

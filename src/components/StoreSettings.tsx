@@ -72,13 +72,13 @@ export function StoreSettings() {
         <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
           <button 
             onClick={() => setLanguage('PT')}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${language === 'PT' ? 'bg-orange-500 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${language === 'PT' ? 'bg-[#7C3AED] text-white shadow' : 'text-gray-400 hover:text-white'}`}
           >
             PT-BR
           </button>
           <button 
             onClick={() => setLanguage('EN')}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${language === 'EN' ? 'bg-orange-500 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${language === 'EN' ? 'bg-[#7C3AED] text-white shadow' : 'text-gray-400 hover:text-white'}`}
           >
             EN
           </button>
@@ -105,7 +105,7 @@ export function StoreSettings() {
           </div>
           <button 
             onClick={testConnection}
-            className="text-orange-500 hover:text-orange-400 font-semibold text-sm underline"
+            className="text-purple-400 hover:text-purple-300 font-semibold text-sm underline cursor-pointer"
           >
             Testar Agora
           </button>

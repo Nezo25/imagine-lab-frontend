@@ -421,7 +421,7 @@ function EditReviewModal({
 function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; onSave: (p: Product) => void; initialData?: Product }) {
   const [form, setForm] = useState({
     name: initialData?.name || '', 
-    category: (initialData?.category ? toProductCategory(initialData.category) : 'FIGURE_POKEMON') as ProductCategory, 
+    category: (initialData?.category ? toProductCategory(initialData.category) : 'CHIBIS') as ProductCategory, 
     universe: (initialData?.universe || toProductUniverse(undefined, initialData?.name, initialData?.category)) as ProductUniverse,
     types: initialData?.types?.join(', ') || '',
     scale: initialData?.scales?.[0] || '1:10', 
@@ -479,7 +479,7 @@ function ProductModal({ onClose, onSave, initialData }: { onClose: () => void; o
         promoPrice: (!isNaN(parsedPromo) && parsedPromo > 0) ? parsedPromo : undefined,
         printTimeH: parseInt(form.printTimeH, 10) || 0,
         filamentG: parseInt(form.filamentG, 10) || 0,
-        image: form.image.trim() || 'https://placehold.co/600x700/1F2937/F97316?text=Figure',
+        image: form.image.trim() || 'https://placehold.co/600x700/1F2937/7C3AED?text=Produto+3D',
         active: form.active,
         featured: form.featured,
         stock: parseInt(form.stock, 10) || 1,

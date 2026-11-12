@@ -48,7 +48,7 @@ export function CatalogFilters({
                   'border-purple-500/80 bg-purple-950/40 text-purple-200'
                 } ${
                   masterTab === 'CAMPAIGN'
-                    ? 'ring-2 ring-orange-500/60 scale-[1.02]'
+                    ? 'ring-2 ring-purple-500/60 scale-[1.02]'
                     : 'opacity-90 hover:opacity-100'
                 }`}
                 style={{
@@ -68,7 +68,7 @@ export function CatalogFilters({
             {[
               { id: 'ALL', label: '🔥 Todas as Criações' },
               { id: 'PRINT_3D', label: '🖨️ Oficina 3D' },
-              { id: 'TCG', label: '🃏 Pokémon' },
+              { id: 'TCG', label: '🃏 Colecionáveis' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -78,7 +78,7 @@ export function CatalogFilters({
                 }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
                   masterTab === tab.id
-                    ? 'bg-gray-700 text-white shadow-md'
+                    ? 'bg-purple-600 text-white shadow-md'
                     : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
@@ -94,7 +94,7 @@ export function CatalogFilters({
                 onClick={() => onChangeFilters(prev => ({ ...prev, categories: [] }))}
                 className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
                   filters.categories.length === 0
-                    ? 'bg-orange-500/20 border-orange-500 text-orange-500'
+                    ? 'bg-purple-500/20 border-purple-500 text-purple-300'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
                 }`}
               >
@@ -110,11 +110,11 @@ export function CatalogFilters({
                     'Acessório Oficial',
                   ]
                 : [
-                    'Figures Pokémon',
+                    'Figures',
                     'Dioramas e Cenários',
                     'Chibis / Miniaturas',
                     'Acessórios Geek 3D',
-                    'Acessórios TCG (3D)',
+                    'Acessórios Colecionáveis (3D)',
                   ]
               ).map(cat => (
                 <button
@@ -122,13 +122,13 @@ export function CatalogFilters({
                   onClick={() => {
                     onChangeFilters(prev => {
                       let newTypes = prev.types;
-                      if (cat !== 'Figures Pokémon' && cat !== 'Chibis / Miniaturas') newTypes = [];
+                      if (cat !== 'Figures' && cat !== 'Chibis / Miniaturas') newTypes = [];
                       return { ...prev, categories: [cat], types: newTypes };
                     });
                   }}
                   className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
                     filters.categories.includes(cat as any)
-                      ? 'bg-orange-500/20 border-orange-500 text-orange-500'
+                      ? 'bg-purple-500/20 border-purple-500 text-purple-300'
                       : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
                   }`}
                 >
@@ -142,7 +142,7 @@ export function CatalogFilters({
         {/* Botão de Filtros */}
         <button
           onClick={onOpenFilterDrawer}
-          className="shrink-0 flex items-center gap-2 px-4 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-full text-sm font-semibold transition-colors border border-gray-700"
+          className="shrink-0 flex items-center gap-2 px-4 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-full text-sm font-semibold transition-colors border border-gray-700 cursor-pointer"
         >
           <svg
             width="16"
@@ -157,7 +157,7 @@ export function CatalogFilters({
           </svg>
           Filtros{' '}
           {activeFiltersCount > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-md">
+            <span className="bg-[#7C3AED] text-white text-xs px-1.5 py-0.5 rounded-md">
               {activeFiltersCount}
             </span>
           )}

@@ -130,7 +130,7 @@ export function WorkshopVideosManager() {
       {/* Cabeçalho do Módulo */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-950/60 text-[#F97316] border border-orange-800/40 mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-purple-950/60 text-[#A855F7] border border-purple-800/40 mb-2">
             🎬 Bastidores da Oficina • Player Contínuo
           </div>
           <h2 className="text-lg sm:text-xl font-extrabold text-white">
@@ -162,7 +162,7 @@ export function WorkshopVideosManager() {
             type="button"
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="h-10 px-5 rounded-xl text-xs font-extrabold bg-[#F97316] hover:bg-orange-600 text-white shadow-lg shadow-orange-950/50 transition-all cursor-pointer disabled:opacity-60"
+            className="h-10 px-5 rounded-xl text-xs font-extrabold bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-lg shadow-purple-950/50 transition-all cursor-pointer disabled:opacity-60"
           >
             {isSaving ? 'Salvando...' : '💾 Salvar Preferências'}
           </button>
@@ -171,9 +171,9 @@ export function WorkshopVideosManager() {
 
       {/* Preview Opcional em Tempo Real */}
       {showPreview && (
-        <div className="p-5 rounded-2xl bg-[#090D16] border border-orange-500/30 shadow-xl">
+        <div className="p-5 rounded-2xl bg-[#090D16] border border-purple-500/30 shadow-xl">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#F97316]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#A855F7]">
               Preview ao Vivo da Vitrine ({activeCount} {activeCount === 1 ? 'etapa ativa' : 'etapas ativas'})
             </span>
             <span className="text-[11px] text-slate-400">
@@ -211,7 +211,7 @@ export function WorkshopVideosManager() {
                   <div
                     className={`w-11 h-11 rounded-xl flex items-center justify-center font-mono text-sm font-extrabold shrink-0 border ${
                       stage.isActive
-                        ? 'bg-orange-500/15 border-orange-500/40 text-[#F97316]'
+                        ? 'bg-purple-500/15 border-purple-500/40 text-[#A855F7]'
                         : 'bg-slate-800/70 border-slate-700 text-slate-500'
                     }`}
                   >
@@ -223,14 +223,14 @@ export function WorkshopVideosManager() {
                         Etapa {stage.stepNumber}: {stage.title}
                       </span>
                       {stage.isInitialDefault && stage.isActive && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-orange-500/20 text-[#F97316] border border-orange-500/40">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/20 text-[#A855F7] border border-purple-500/40">
                           ★ Vídeo Principal de Abertura
                         </span>
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
                       <span className="text-[11px] text-slate-400">Arquivo local:</span>
-                      <code className="px-2 py-0.5 rounded bg-[#090D16] border border-slate-800 text-[11px] font-mono text-orange-300">
+                      <code className="px-2 py-0.5 rounded bg-[#090D16] border border-slate-800 text-[11px] font-mono text-purple-300">
                         /public{stage.localPath}
                       </code>
                     </div>
@@ -246,7 +246,7 @@ export function WorkshopVideosManager() {
                       name="initialDefaultStage"
                       checked={stage.isInitialDefault}
                       onChange={() => handleSetInitialDefault(stage.id)}
-                      className="accent-[#F97316] w-4 h-4 cursor-pointer"
+                      className="accent-[#7C3AED] w-4 h-4 cursor-pointer"
                     />
                     <span className="text-xs font-semibold text-slate-200">
                       Definir como Vídeo Principal de Abertura
@@ -267,7 +267,7 @@ export function WorkshopVideosManager() {
                   >
                     <span
                       className={`w-8 h-4 rounded-full relative transition-colors ${
-                        stage.isActive ? 'bg-[#F97316]' : 'bg-slate-700'
+                        stage.isActive ? 'bg-[#7C3AED]' : 'bg-slate-700'
                       }`}
                     >
                       <span
@@ -292,7 +292,7 @@ export function WorkshopVideosManager() {
                     value={stage.title}
                     onChange={e => handleFieldChange(stage.id, 'title', e.target.value)}
                     placeholder="Ex: Impressão 3D de Precisão"
-                    className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#F97316] text-white outline-none transition-colors"
+                    className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#7C3AED] text-white outline-none transition-colors"
                   />
                 </div>
 
@@ -305,7 +305,7 @@ export function WorkshopVideosManager() {
                     value={stage.subtitle}
                     onChange={e => handleFieldChange(stage.id, 'subtitle', e.target.value)}
                     placeholder="Ex: Construção milimétrica camada por camada"
-                    className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#F97316] text-white outline-none transition-colors"
+                    className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#7C3AED] text-white outline-none transition-colors"
                   />
                 </div>
               </div>

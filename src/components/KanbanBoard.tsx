@@ -156,12 +156,12 @@ export function KanbanBoard() {
               setSearchParams({});
             }
           }}
-          className="w-full md:w-1/3 h-10 px-4 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 outline-none focus:border-orange-500 transition-colors shadow-inner"
+          className="w-full md:w-1/3 h-10 px-4 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 outline-none focus:border-purple-500 transition-colors shadow-inner"
         />
         {hasSingleResult && singleResultCard && (
           <button 
             onClick={() => { setSearchParams({ os: singleResultCard.shortCode }); setSelectedOrder(singleResultCard); }}
-            className="h-10 px-4 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-orange-500/20"
+            className="h-10 px-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-purple-950/40"
           >
             Abrir OS Direto 🚀
           </button>
@@ -198,11 +198,11 @@ export function KanbanBoard() {
                               {...provided.dragHandleProps}
                               onClick={() => { setSearchParams({ os: card.shortCode }); setSelectedOrder(card); }}
                               className={`bg-gray-900 p-3 rounded-lg border cursor-pointer transition-shadow ${
-                                snapshot.isDragging ? 'border-orange-500 shadow-lg shadow-orange-500/20 scale-105' : 'border-gray-700 hover:border-gray-500 hover:shadow-md'
+                                snapshot.isDragging ? 'border-purple-500 shadow-lg shadow-purple-900/30 scale-105' : 'border-gray-700 hover:border-gray-500 hover:shadow-md'
                               }`}
                             >
                               <div className="flex justify-between items-start mb-2">
-                                <span className="text-xs font-mono font-bold text-orange-400 bg-orange-950/30 px-1.5 py-0.5 rounded">
+                                <span className="text-xs font-mono font-bold text-purple-300 bg-purple-950/50 px-1.5 py-0.5 rounded">
                                   {card.shortCode}
                                 </span>
                                 <span className="text-[10px] text-gray-500">Há 10 min</span>

@@ -50,12 +50,12 @@ export interface Filament {
 }
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'imaginelab_prod_products',
-  ORDERS: 'imaginelab_prod_orders',
-  QUOTES: 'imaginelab_prod_quotes',
-  FILAMENTS: 'imaginelab_prod_filaments',
-  INITIALIZED: 'imaginelab_prod_initialized_v4',
-  FEATURED_ID: 'imaginelab_featured_product_id'
+  PRODUCTS: 'imaginelab_prod_products_v5',
+  ORDERS: 'imaginelab_prod_orders_v5',
+  QUOTES: 'imaginelab_prod_quotes_v5',
+  FILAMENTS: 'imaginelab_prod_filaments_v5',
+  INITIALIZED: 'imaginelab_prod_initialized_v5',
+  FEATURED_ID: 'imaginelab_featured_product_id_v5'
 };
 
 export function getFeaturedProductId(): string | null {
@@ -230,20 +230,21 @@ export function isFakeMockProduct(p: any): boolean {
     'placa decorativa 3d demon slayer',
     'berserk',
     'demon slayer',
-    'charizard stance',
-    'gengar sorridente',
-    'gyarados emergindo',
-    'pikachu thunder',
-    'mewtwo armadura',
-    'bulbasaur chibi',
-    'garchomp diorama',
+    'charizard',
+    'gengar',
+    'gyarados',
+    'pikachu',
+    'mewtwo',
+    'bulbasaur',
+    'garchomp',
     'suporte pokébola',
     'suporte pokebola',
-    'dialga lendário',
-    'dialga lendario'
+    'dialga',
+    'chico'
   ];
   if (forjaChicoProducts.some(name => nameLower.includes(name))) return true;
   if (p.category === 'TCG' || p.category === 'FIGURE_POKEMON' || p.category === 'Figures Pokémon') return true;
+  if (p.universe === 'POKEMON_TCG') return true;
   return false;
 }
 
@@ -252,20 +253,24 @@ export function getStoredProducts(): Product[] {
     const local = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
     if (local !== null) {
       const parsed = JSON.parse(local);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         const clean = parsed.filter(p => !isFakeMockProduct(p));
         if (clean.length > 0) {
-          // Garante que os produtos oficiais da ImagineLab estão presentes
-          const merged = [...products, ...clean];
-          return consolidateProducts(merged.map(sanitizeProduct));
+          return consolidateProducts(clean.map(sanitizeProduct));
         }
       }
     }
   } catch (e) {
     console.error('Erro ao ler produtos:', e);
   }
-  // Se o cache local estiver vazio (primeiro acesso, Safari privado, etc), usa o catálogo real da oficina
-  return products.length > 0 ? consolidateProducts(products.map(sanitizeProduct)) : [];
+  // Se o storage estiver vazio (primeiro acesso), inicializa com o catálogo exclusivo da ImagineLab
+  const initial = products.length > 0 ? consolidateProducts(products.map(sanitizeProduct)) : [];
+  try {
+    if (typeof window !== 'undefined' && initial.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(initial));
+    }
+  } catch {}
+  return initial;
 }
 
 export function saveProductsToStorage(productsList: Product[]): void {
@@ -294,46 +299,8 @@ export function incrementProductStock(id: string, delta: number = 1): number {
   return finalStock;
 }
 
-export async function fetchRemoteProducts(maxAttempts = 5): Promise<Product[]> {
-  const executeFetch = async (): Promise<Product[]> => {
-    let allProducts: Product[] = [];
-
-    // Fetch 3D Models reais cadastrados na oficina para ImagineLab
-    try {
-      const data3d: any = await fetchApi('/models?size=100');
-      const items3d = data3d?.content || (Array.isArray(data3d) ? data3d : []);
-      if (Array.isArray(items3d) && items3d.length > 0) {
-        allProducts = [...items3d.map(sanitizeProduct)];
-      }
-    } catch (err) {
-      console.warn('Tentativa na API de modelos:', err);
-    }
-
-    const validFetched = allProducts.filter(p => !isFakeMockProduct(p));
-    // Garante que o catálogo oficial da ImagineLab está presente
-    const merged = [...products, ...validFetched];
-    return consolidateProducts(merged.map(sanitizeProduct));
-  };
-
-  const delays = [2500, 3500, 5000, 6000, 8000];
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const results = await executeFetch();
-      if (results.length > 0) {
-        const consolidated = consolidateProducts(results);
-        saveProductsToStorage(consolidated);
-        return consolidated;
-      }
-    } catch (err) {
-      console.warn(`Tentativa ${attempt + 1}/${maxAttempts} falhou:`, err);
-    }
-
-    if (attempt < maxAttempts - 1) {
-      await new Promise(r => setTimeout(r, delays[attempt] || 4000));
-    }
-  }
-
+export async function fetchRemoteProducts(): Promise<Product[]> {
+  // Retorna o catálogo oficial e personalizado da ImagineLab
   return getStoredProducts();
 }
 
@@ -404,40 +371,6 @@ export async function saveProduct(productData: Partial<Product>, initialId?: str
   }
 
   saveProductsToStorage(updatedList);
-
-  const categoryEnum: ProductCategory = fullProduct.category === 'TCG' ? 'FIGURE_POKEMON' : toProductCategory(fullProduct.category);
-
-  // Payload exatamente mapeado para o DTO do Spring Boot
-  const payload = {
-    pokedexNumber: 0,
-    name: fullProduct.name,
-    category: categoryEnum,
-    universe: fullProduct.universe,
-    generation: 1,
-    primaryType: fullProduct.types[0] || 'Normal',
-    secondaryType: fullProduct.types[1] || null,
-    scale: fullProduct.scales[0] || '1:10',
-    basePrintTimeMinutes: (fullProduct.printTimeH || 0) * 60,
-    defaultFilamentGrams: fullProduct.filamentG || 0,
-    imageUrl: fullProduct.image,
-    basePrice: fullProduct.basePrice
-  };
-
-  const method = isEditing && !id.startsWith('prod_') ? 'PUT' : 'POST';
-  const url = isEditing && !id.startsWith('prod_') ? `/models/${id}` : '/models';
-
-  try {
-    const savedFromApi: any = await fetchApi(url, { method, body: JSON.stringify(payload) });
-    if (savedFromApi?.id) {
-      const realId = savedFromApi.id.toString();
-      const updatedWithRealId = getStoredProducts().map(p => p.id === id ? { ...p, id: realId } : p);
-      saveProductsToStorage(updatedWithRealId);
-      fullProduct.id = realId;
-    }
-  } catch (apiErr) {
-    console.warn('Tentativa na API falhou, dados mantidos:', apiErr);
-  }
-
   return fullProduct;
 }
 
@@ -445,58 +378,23 @@ export async function deleteProduct(id: string): Promise<void> {
   const current = getStoredProducts();
   const product = current.find(p => p.id === id);
   if (!product) return;
-  const isTcg = product.category === 'TCG';
 
   const updated = current.filter(p => p.id !== id);
   saveProductsToStorage(updated);
-
-  try {
-    if (isTcg) {
-      await fetchApi(`/admin/tcg-products/${id}`, { method: 'DELETE' });
-    } else {
-      await fetchApi(`/models/${id}`, { method: 'DELETE' });
-    }
-  } catch (err) {
-    console.warn('Erro ao deletar na API:', err);
-  }
 }
 
 export async function toggleProductActive(id: string): Promise<boolean> {
   const current = getStoredProducts();
   let newStatus = true;
-  let isTcg = false;
   
   const updated = current.map(p => {
     if (p.id === id) {
       newStatus = !p.active;
-      if (p.category === 'TCG') isTcg = true;
       return { ...p, active: newStatus };
     }
     return p;
   });
   saveProductsToStorage(updated);
-
-  try {
-    if (isTcg) {
-      await fetchApi(`/admin/tcg-products/${id}/toggle-active`, { method: 'PATCH' });
-    } else {
-      const p = updated.find(x => x.id === id);
-      if (p) {
-        await fetchApi(`/models/${id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            name: p.name,
-            generation: 1,
-            primaryType: p.types[0] || 'Normal',
-            scale: p.scales[0] || '1:10',
-            basePrintTimeMinutes: (p.printTimeH || 0) * 60,
-            defaultFilamentGrams: p.filamentG || 0,
-            isActive: newStatus
-          })
-        });
-      }
-    }
-  } catch (err) {}
   return newStatus;
 }
 
@@ -504,7 +402,6 @@ export async function updateProductPrice(id: string, newPrice: number, newPromoP
   const current = getStoredProducts();
   const product = current.find(p => p.id === id);
   if (!product) return;
-  const isTcg = product.category === 'TCG';
 
   const updated = current.map(p => {
     if (p.id !== id) return p;
@@ -515,33 +412,6 @@ export async function updateProductPrice(id: string, newPrice: number, newPromoP
     };
   });
   saveProductsToStorage(updated);
-
-  try {
-    if (isTcg) {
-      // For TCG, we need to send the whole object since we added PUT /admin/tcg-products/{id}
-      // But it's easier to just fetch it and update, or we can leave it since TCG has its own modal for editing
-      // Actually, Admin.tsx calls handleSavePrice for both. We should support it!
-      const tcgPayload = {
-        name: product.name,
-        itemType: product.scales[0], // it's stored in scales
-        expansionName: product.expansionName,
-        language: product.materials[0], // it's stored in materials
-        price: newPrice,
-        stockQuantity: (product as any).stockQuantity || (product as any).stock || 0,
-        imageUrl: product.image,
-        isActive: product.active
-      };
-      await fetchApi(`/admin/tcg-products/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(tcgPayload)
-      });
-    } else {
-      await fetchApi(`/models/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ basePrice: newPrice })
-      });
-    }
-  } catch (err) {}
 }
 
 // ------------------- FILAMENTOS (SEM MOCKS) -------------------

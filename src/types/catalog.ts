@@ -68,10 +68,10 @@ export const ENUM_BY_LABEL: Record<string, ProductCategory> = {
 };
 
 export function toProductCategory(val?: string | null): ProductCategory {
-  if (!val) return 'FIGURE_POKEMON';
+  if (!val) return 'CHIBI';
   if (val in CATEGORY_LABELS) return val as ProductCategory;
   if (val in ENUM_BY_LABEL) return ENUM_BY_LABEL[val];
-  return 'FIGURE_POKEMON';
+  return 'CHIBI';
 }
 
 export function toProductUniverse(val?: string | null, name?: string, category?: string): ProductUniverse {
@@ -89,6 +89,6 @@ export function toProductUniverse(val?: string | null, name?: string, category?:
   if (n.includes('mario') || n.includes('zelda') || n.includes('sonic') || n.includes('sanrio') || n.includes('hello kitty') || n.includes('batman') || n.includes('marvel') || n.includes('spider')) {
     return 'POP_CULTURE_GEEK';
   }
-  return 'POKEMON_TCG';
+  return 'POP_CULTURE_GEEK';
 }
 

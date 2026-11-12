@@ -105,13 +105,13 @@ export function NewTcgProductModal({ onClose, onSave, initialData }: NewTcgProdu
           <form id="tcg-form" onSubmit={handleSave} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Nome do Produto *</label>
-              <input required value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500" placeholder="Ex: Booster Pack - Fagulhas Impetuosas" />
+              <input required value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500" placeholder="Ex: Booster Pack - Colecionável" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tipo de Item TCG *</label>
-                <select value={form.itemType} onChange={e => setForm(f => ({...f, itemType: e.target.value as any}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500">
+                <select value={form.itemType} onChange={e => setForm(f => ({...f, itemType: e.target.value as any}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500">
                   <option value="BOOSTER_PACK">Booster Avulso</option>
                   <option value="BOOSTER_BOX">Booster Box 36 un</option>
                   <option value="ETB">Elite Trainer Box - ETB</option>
@@ -122,7 +122,7 @@ export function NewTcgProductModal({ onClose, onSave, initialData }: NewTcgProdu
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Idioma da Carta *</label>
-                <select value={form.language} onChange={e => setForm(f => ({...f, language: e.target.value as any}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500">
+                <select value={form.language} onChange={e => setForm(f => ({...f, language: e.target.value as any}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500">
                   <option value="PT_BR">Português (PT-BR)</option>
                   <option value="EN">Inglês (EN)</option>
                   <option value="JA">Japonês (JA)</option>
@@ -132,17 +132,17 @@ export function NewTcgProductModal({ onClose, onSave, initialData }: NewTcgProdu
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Coleção / Expansão *</label>
-              <input required value={form.expansionName} onChange={e => setForm(f => ({...f, expansionName: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500" placeholder="Ex: Escarlate e Violeta 8" />
+              <input required value={form.expansionName} onChange={e => setForm(f => ({...f, expansionName: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500" placeholder="Ex: Coleção Especial 2026" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Preço Unitário de Venda (R$) *</label>
-                <input required type="number" step="0.01" min="0" value={form.price === 0 ? '' : form.price} onChange={e => setForm(f => ({...f, price: parseFloat(e.target.value)}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500" />
+                <input required type="number" step="0.01" min="0" value={form.price === 0 ? '' : form.price} onChange={e => setForm(f => ({...f, price: parseFloat(e.target.value)}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Quantidade em Estoque (Unidades) *</label>
-                <input required type="number" min="0" step="1" value={form.stockQuantity === 0 ? '' : form.stockQuantity} onChange={e => setForm(f => ({...f, stockQuantity: parseInt(e.target.value, 10)}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500" />
+                <input required type="number" min="0" step="1" value={form.stockQuantity === 0 ? '' : form.stockQuantity} onChange={e => setForm(f => ({...f, stockQuantity: parseInt(e.target.value, 10)}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500" />
               </div>
             </div>
 
@@ -155,7 +155,7 @@ export function NewTcgProductModal({ onClose, onSave, initialData }: NewTcgProdu
                   </div>
                 )}
                 <div className="flex-1 flex flex-col gap-2">
-                  <input value={form.imageUrl} onChange={e => setForm(f => ({...f, imageUrl: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-orange-500" placeholder="URL da Imagem oficial" />
+                  <input value={form.imageUrl} onChange={e => setForm(f => ({...f, imageUrl: e.target.value}))} className="w-full h-9 px-3 rounded-lg text-sm outline-none bg-gray-800 border border-gray-700 text-gray-100 focus:border-purple-500" placeholder="URL da Imagem oficial" />
                   <div className="text-xs text-gray-500 text-center">ou</div>
                   <label className="relative cursor-pointer flex items-center justify-center h-9 px-4 rounded-lg bg-gray-800 border border-gray-600 hover:bg-gray-700 transition-colors text-xs font-semibold text-gray-200">
                     <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
@@ -166,14 +166,16 @@ export function NewTcgProductModal({ onClose, onSave, initialData }: NewTcgProdu
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer mt-2 text-sm text-gray-200 bg-gray-800/50 p-3 rounded-lg border border-gray-700/50">
-              <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({...f, isActive: e.target.checked}))} className="w-4 h-4 accent-orange-500 rounded" />
+              <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({...f, isActive: e.target.checked}))} className="w-4 h-4 accent-purple-500 rounded" />
               <span className="font-medium">Produto visível e disponível para venda na vitrine</span>
             </label>
           </form>
         </div>
         
         <div className="p-5 border-t border-gray-700 bg-gray-900/95 rounded-b-xl">
-          <button type="submit" form="tcg-form" disabled={loading} className="w-full py-3 rounded-lg text-sm font-extrabold text-white bg-orange-600 hover:bg-orange-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20">
+          <button type="submit" form="tcg-form" disabled={loading} className="w-full py-3 rounded-lg text-sm font-extrabold text-white bg-[#7C3AED] hover:bg-[#6D28D9] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-900/30 cursor-pointer">
+            {loading ? 'Processando...' : 'Salvar Produto TCG 🃏'}
+          </button>
             {loading ? 'Processando...' : 'Salvar Produto TCG 🃏'}
           </button>
         </div>

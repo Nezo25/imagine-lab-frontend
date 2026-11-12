@@ -28,7 +28,7 @@ export const THEME_PRESET_CONFIGS: Record<ThemePreset, ThemePresetConfig> = {
     accentColor: '#F97316',
     secondaryColor: '#7C3AED',
     tabClasses: 'border-purple-500/80 bg-purple-950/40 text-purple-200 shadow-[0_0_16px_rgba(168,85,247,0.3)]',
-    badgeClasses: 'bg-purple-950/80 border-purple-500/60 text-orange-300'
+    badgeClasses: 'bg-purple-950/80 border-purple-500/60 text-purple-300'
   },
   CHRISTMAS: {
     id: 'CHRISTMAS',
@@ -75,10 +75,10 @@ export const THEME_PRESET_CONFIGS: Record<ThemePreset, ThemePresetConfig> = {
     label: '✨ Customizado (Cor Hex Livre)',
     emoji: '✨',
     defaultTag: '✨ EVENTO ESPECIAL',
-    accentColor: '#F97316',
-    secondaryColor: '#7C3AED',
-    tabClasses: 'border-orange-500/80 bg-orange-950/40 text-orange-200 shadow-[0_0_16px_rgba(249,115,22,0.3)]',
-    badgeClasses: 'bg-slate-900/90 border-orange-500/60 text-orange-300'
+    accentColor: '#7C3AED',
+    secondaryColor: '#38BDF8',
+    tabClasses: 'border-purple-500/80 bg-purple-950/40 text-purple-200 shadow-[0_0_16px_rgba(124,58,237,0.3)]',
+    badgeClasses: 'bg-slate-900/90 border-purple-500/60 text-purple-300'
   }
 };
 

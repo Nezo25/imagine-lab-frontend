@@ -5,6 +5,7 @@ import {
   fetchAdminShowcase,
   updateShowcaseSlot,
   getDefaultPublicShowcase,
+  isForeignChicoItem,
   type AdminShowcaseSlot,
 } from '@/services/showcase';
 import { fileToBase64 } from '@/services/storage';
@@ -13,15 +14,24 @@ interface ShowcaseManagerProps {
   products: Product[];
 }
 
-const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_cache_v1';
+const ADMIN_SHOWCASE_CACHE_KEY = 'imaginelab_showcase_admin_v4';
 
 function buildInitialSlots(products: Product[]): AdminShowcaseSlot[] {
   if (typeof window !== 'undefined') {
+    localStorage.removeItem('imaginelab_showcase_admin_v3');
+    localStorage.removeItem('imaginelab_showcase_admin_cache_v1');
     const cached = localStorage.getItem(ADMIN_SHOWCASE_CACHE_KEY);
     if (cached) {
       try {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length === 4) return parsed;
+        const parsed: AdminShowcaseSlot[] = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length === 4 && !isForeignChicoItem(parsed)) {
+          parsed.forEach(s => {
+            if (s.mysteryWhatsappText?.toLowerCase().includes('chico')) {
+              s.mysteryWhatsappText = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
+            }
+          });
+          return parsed;
+        }
       } catch {}
     }
   }
@@ -38,7 +48,7 @@ function buildInitialSlots(products: Product[]): AdminShowcaseSlot[] {
       promotionalPrice: s.promotionalPrice,
       discountAmount: s.discountAmount,
       discountPercentage: s.discountPercentage,
-      badgeLabel: s.badgeLabel || '🔥 OFERTA DESTAQUE DA OFICINA',
+      badgeLabel: s.badgeLabel || '🔥 DESTAQUE IMAGINELAB',
       allowCouponStacking: s.allowCouponStacking ?? false,
       isActive: true,
     })),
@@ -79,8 +89,8 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
             isActive: true,
             badgeLabel: num === 4 ? '❓ DROP MISTERIOSO' : '🔥 DESTAQUE IMAGINELAB',
             allowCouponStacking: false,
-            mysteryCategory: 'FIGURE_POKEMON',
-            mysteryTitle: 'Quem é esse Pokémon?',
+            mysteryCategory: 'GEEK_GENERAL',
+            mysteryTitle: 'Quem é esse Personagem?',
             mysterySubtitle: 'Próximo lançamento exclusivo em 3D',
             mysteryWhatsappText: 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!',
           };
@@ -96,7 +106,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [products]);
 
   function handleSlotChange(slotNumber: number, updates: Partial<AdminShowcaseSlot>) {
     setSlots(prev => prev.map(s => (s.slotNumber === slotNumber ? { ...s, ...updates } : s)));
@@ -292,7 +302,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
   async function saveSingleSlot(slot: AdminShowcaseSlot) {
     setSavingSlot(slot.slotNumber);
     try {
-      await updateShowcaseSlot(slot.slotNumber, {
+      const updated = await updateShowcaseSlot(slot.slotNumber, {
         productId: slot.productId,
         productName: slot.productName,
         productCategory: slot.productCategory,
@@ -310,6 +320,8 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
         mysteryImageUrl: slot.mysteryImageUrl,
         mysteryWhatsappText: slot.mysteryWhatsappText,
       });
+
+      setSlots(prev => prev.map(s => (s.slotNumber === slot.slotNumber ? { ...s, ...updated } : s)));
 
       toast.show({
         title: `Slot ${slot.slotNumber} Atualizado!`,
@@ -421,15 +433,15 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
             return (
               <div
                 key={slot.slotNumber}
-                className="flex flex-col rounded-2xl bg-[#0B1120] border-2 border-amber-500/30 shadow-2xl p-5 relative overflow-hidden group"
+                className="flex flex-col rounded-2xl bg-[#0B1120] border-2 border-purple-500/40 hover:border-purple-500/60 shadow-2xl p-5 relative overflow-hidden group shadow-purple-950/20"
               >
                 {/* Header do Card */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
                       SLOT 04
                     </span>
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-amber-300">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-purple-300">
                       Drop Misterioso
                     </span>
                   </div>
@@ -439,7 +451,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       type="checkbox"
                       checked={slot.isActive ?? true}
                       onChange={e => handleSlotChange(slot.slotNumber, { isActive: e.target.checked })}
-                      className="rounded accent-amber-500 w-3.5 h-3.5"
+                      className="rounded accent-purple-500 w-3.5 h-3.5"
                     />
                     <span className="text-[11px] text-slate-300">Ativo</span>
                   </label>
@@ -457,7 +469,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       let defaultTitle = 'Quem é esse Personagem?';
                       let defaultSub = 'Colecionável exclusivo em produção';
                       let defaultBadge = '❓ Drop Geek Misterioso';
-                      let defaultWpp = 'Olá, ImagineLab! Vi o colecionável misterioso em destaque no site e quero saber qual é a peça!';
+                      let defaultWpp = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
 
                       if (cat === 'DIORAMA' || cat === 'TCG_SPECIAL') {
                         defaultTitle = 'Drop Secreto ImagineLab';
@@ -468,7 +480,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                         defaultTitle = 'Quem é esse Personagem?';
                         defaultSub = 'Próximo lançamento exclusivo em 3D';
                         defaultBadge = '❓ Figura Secreta';
-                        defaultWpp = 'Olá, ImagineLab! Vi a figura misteriosa em destaque no site e quero saber qual é a peça!';
+                        defaultWpp = 'Olá, ImagineLab! Vi o drop misterioso da semana no site e quero garantir com desconto exclusivo!';
                       }
 
                       handleSlotChange(slot.slotNumber, {
@@ -488,19 +500,19 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                   </select>
                 </div>
 
-                {/* Preview Automático da Silhueta Escurecida com ? Dourada */}
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black/60 border border-amber-500/20 my-2 flex items-center justify-center">
+                {/* Preview Automático da Silhueta Escurecida com ? Roxo/Ciano */}
+                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black/60 border border-purple-500/30 my-2 flex items-center justify-center">
                   <img
                     src={slot.mysteryImageUrl || 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop'}
                     alt="Preview Silhueta"
                     className="w-full h-full object-contain p-2 filter brightness-0 contrast-200 opacity-90"
                   />
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="font-display text-4xl text-amber-400 font-black drop-shadow-[0_0_15px_rgba(251,191,36,0.9)] animate-pulse">
+                    <span className="font-display text-4xl text-purple-400 font-black drop-shadow-[0_0_15px_rgba(168,85,247,0.9)] animate-pulse">
                       ?
                     </span>
                   </div>
-                  <span className="absolute bottom-1 right-2 text-[9px] font-mono text-amber-300 bg-black/70 px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-1 right-2 text-[9px] font-mono text-purple-300 bg-black/70 px-1.5 py-0.5 rounded">
                     Silhueta 100%
                   </span>
                 </div>
@@ -515,7 +527,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                     placeholder="https://... ou faça upload abaixo"
                     value={slot.mysteryImageUrl || ''}
                     onChange={e => handleSlotChange(slot.slotNumber, { mysteryImageUrl: e.target.value })}
-                    className="h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500"
                   />
                   <label className="mt-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] text-slate-300 cursor-pointer transition-colors">
                     <span>📁 Enviar foto do arquivo</span>
@@ -539,7 +551,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       type="text"
                       value={slot.mysteryTitle || ''}
                       onChange={e => handleSlotChange(slot.slotNumber, { mysteryTitle: e.target.value })}
-                      className="w-full h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500"
                     />
                   </div>
                   <div>
@@ -548,7 +560,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                       type="text"
                       value={slot.mysterySubtitle || ''}
                       onChange={e => handleSlotChange(slot.slotNumber, { mysterySubtitle: e.target.value })}
-                      className="w-full h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full h-8 px-3 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500"
                     />
                   </div>
                 </div>
@@ -562,7 +574,7 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                     rows={2}
                     value={slot.mysteryWhatsappText || ''}
                     onChange={e => handleSlotChange(slot.slotNumber, { mysteryWhatsappText: e.target.value })}
-                    className="w-full p-2.5 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500 resize-none"
+                    className="w-full p-2.5 rounded-lg bg-[#1E293B] border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500 resize-none"
                   />
                 </div>
 
@@ -571,10 +583,10 @@ export function ShowcaseManager({ products }: ShowcaseManagerProps) {
                   type="button"
                   disabled={isSaving}
                   onClick={() => saveSingleSlot(slot)}
-                  className="w-full h-9 rounded-xl font-bold text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer mt-auto"
+                  className="w-full h-9 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#7C3AED] hover:bg-[#6D28D9] text-white flex items-center justify-center gap-1.5 shadow-md shadow-purple-950/40 active:scale-95 transition-all cursor-pointer mt-auto"
                 >
                   {isSaving ? (
-                    <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Salvar Slot 04 💾</span>
                   )}

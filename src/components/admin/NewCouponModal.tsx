@@ -120,7 +120,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                 <select
                   value={discountType}
                   onChange={e => setDiscountType(e.target.value as DiscountType)}
-                  className="w-full h-10 px-3 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-orange-500"
+                  className="w-full h-10 px-3 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-purple-500"
                 >
                   <option value="PERCENTAGE">Porcentagem (%)</option>
                   <option value="FIXED_AMOUNT">Valor Fixo (R$)</option>
@@ -144,7 +144,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                     placeholder={discountType === 'PERCENTAGE' ? 'Ex: 10' : 'Ex: 15.00'}
                     value={discountValue}
                     onChange={e => setDiscountValue(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 rounded-xl text-sm font-bold bg-gray-900 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-orange-500"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl text-sm font-bold bg-gray-900 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
@@ -162,7 +162,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                 placeholder="0.00 (Sem valor mínimo)"
                 value={minOrderValue}
                 onChange={e => setMinOrderValue(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl text-sm bg-gray-900 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-orange-500"
+                className="w-full h-10 px-3 rounded-xl text-sm bg-gray-900 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500"
               />
             </div>
 
@@ -172,12 +172,12 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                 <label className="text-xs font-bold text-gray-300 uppercase tracking-wider">
                   Limite Máximo de Usos
                 </label>
-                <label className="flex items-center gap-1.5 cursor-pointer text-xs text-orange-400 font-semibold select-none">
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs text-purple-400 font-semibold select-none">
                   <input
                     type="checkbox"
                     checked={isUnlimitedUses}
                     onChange={e => setIsUnlimitedUses(e.target.checked)}
-                    className="accent-orange-500 w-4 h-4 rounded cursor-pointer"
+                    className="accent-purple-500 w-4 h-4 rounded cursor-pointer"
                   />
                   <span>Ilimitado</span>
                 </label>
@@ -190,7 +190,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                   placeholder="Ex: 50 utilizações"
                   value={maxUses}
                   onChange={e => setMaxUses(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg text-sm bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-orange-500"
+                  className="w-full h-9 px-3 rounded-lg text-sm bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-purple-500"
                 />
               )}
             </div>
@@ -205,7 +205,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                 type="checkbox"
                 checked={isFirstPurchaseOnly}
                 onChange={e => setIsFirstPurchaseOnly(e.target.checked)}
-                className="accent-orange-500 w-5 h-5 rounded cursor-pointer"
+                className="accent-purple-500 w-5 h-5 rounded cursor-pointer"
               />
             </div>
 
@@ -218,7 +218,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
                 type="date"
                 value={expiresAt}
                 onChange={e => setExpiresAt(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl text-sm bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-orange-500"
+                className="w-full h-10 px-3 rounded-xl text-sm bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-purple-500"
               />
               <span className="text-[11px] text-gray-500 mt-1 block">Deixe em branco para cupom por tempo indeterminado.</span>
             </div>
@@ -237,7 +237,7 @@ export function NewCouponModal({ onClose, onSave }: Props) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 disabled:opacity-50 shadow-lg shadow-orange-600/20 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 shadow-lg shadow-purple-600/20 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
             >
               <span>{isSubmitting ? 'Salvando...' : 'Salvar e Ativar Cupom 🏷️'}</span>
             </button>

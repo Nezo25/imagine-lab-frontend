@@ -210,21 +210,21 @@ export function CartDrawer({ open, cart, onClose, onRemove, onClear }: Props) {
                   placeholder="Nome Completo"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
                 <input
                   type="email"
                   placeholder="E-mail"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
                 <input
                   type="tel"
                   placeholder="WhatsApp com DDD"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
 
@@ -252,7 +252,7 @@ export function CartDrawer({ open, cart, onClose, onRemove, onClear }: Props) {
                           setCoupon(e.target.value);
                           if (couponError) setCouponError(null);
                         }}
-                        className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white uppercase placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                        className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-white uppercase placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                       <button 
                         onClick={handleApplyCoupon} 

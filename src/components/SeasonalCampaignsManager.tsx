@@ -17,10 +17,10 @@ import { toast } from '@/components/Toast';
 const EMPTY_FORM: SeasonalCampaign = {
   name: '',
   slug: '',
-  tagLabel: '🎃 ESPECIAL HALLOWEEN',
-  themePreset: 'HALLOWEEN',
-  accentColor: '#F97316',
-  secondaryColor: '#7C3AED',
+  tagLabel: '✨ EVENTO ESPECIAL',
+  themePreset: 'CUSTOM',
+  accentColor: '#7C3AED',
+  secondaryColor: '#38BDF8',
   bannerTitle: 'Especial Temporada na ImagineLab',
   bannerSubtitle: 'Colecionáveis exclusivos e edições limitadas impressas especialmente para a temporada.',
   isActive: true,
@@ -230,21 +230,21 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
       {/* Header */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-950/60 text-[#F97316] border border-orange-800/40 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-purple-950/60 text-[#A855F7] border border-purple-800/40 mb-2">
             🎃 Eventos Sazonais & Datas Comemorativas
           </span>
           <h2 className="text-lg sm:text-xl font-extrabold text-white">
             Campanhas & Eventos Especiais
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Ative eventos temporários (Halloween, Natal, Pokémon Day, Anime Fest) com estilização dinâmica e seleção curada de peças.
+            Ative eventos temporários (Halloween, Natal, Geek Day, Anime Fest) com estilização dinâmica e seleção curada de peças.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleOpenNew}
-          className="h-10 px-5 rounded-xl text-xs font-extrabold bg-[#F97316] hover:bg-orange-600 text-white shadow-lg shadow-orange-950/50 transition-all cursor-pointer shrink-0"
+          className="h-10 px-5 rounded-xl text-xs font-extrabold bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-lg shadow-purple-950/50 transition-all cursor-pointer shrink-0"
         >
           + Nova Campanha
         </button>
@@ -254,7 +254,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="p-6 rounded-2xl bg-[#0F172A] border border-orange-500/40 shadow-2xl flex flex-col gap-6"
+          className="p-6 rounded-2xl bg-[#0F172A] border border-purple-500/40 shadow-2xl flex flex-col gap-6"
         >
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <div>
@@ -290,7 +290,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                     onClick={() => handleSelectPreset(presetKey)}
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
                       isSelected
-                        ? 'bg-[#090D16] border-[#F97316] text-white shadow-md'
+                        ? 'bg-[#090D16] border-[#7C3AED] text-white shadow-md'
                         : 'bg-[#090D16]/60 border-slate-800 text-slate-300 hover:border-slate-700'
                     }`}
                   >
@@ -322,8 +322,8 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                 required
                 value={form.name}
                 onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Ex: Halloween dos Fantasmas 2026"
-                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#F97316] text-white outline-none"
+                placeholder="Ex: Colecionáveis Especiais 2026"
+                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#7C3AED] text-white outline-none"
               />
             </div>
 
@@ -336,8 +336,8 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                 required
                 value={form.tagLabel}
                 onChange={e => setForm(prev => ({ ...prev, tagLabel: e.target.value }))}
-                placeholder="Ex: 🎃 Especial Halloween"
-                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#F97316] text-white outline-none"
+                placeholder="Ex: ✨ Especial Geek"
+                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#7C3AED] text-white outline-none"
               />
             </div>
 
@@ -405,8 +405,8 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                 type="text"
                 value={form.bannerSubtitle}
                 onChange={e => setForm(prev => ({ ...prev, bannerSubtitle: e.target.value }))}
-                placeholder="Ex: Edições sombrias pintadas à mão com preço especial por tempo limitado."
-                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#F97316] text-white outline-none"
+                placeholder="Ex: Peças exclusivas impressas em resina e PLA com acabamento artesanal."
+                className="w-full h-10 px-3.5 rounded-xl text-sm bg-[#090D16] border border-slate-800 focus:border-[#7C3AED] text-white outline-none"
               />
             </div>
           </div>
@@ -445,7 +445,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                     className={`shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all ${
                       alreadyAdded
                         ? 'bg-emerald-950/30 border-emerald-700/40 text-emerald-400 cursor-default'
-                        : 'bg-[#0F172A] border-slate-800 hover:border-[#F97316] text-slate-200 cursor-pointer'
+                        : 'bg-[#0F172A] border-slate-800 hover:border-[#7C3AED] text-slate-200 cursor-pointer'
                     }`}
                   >
                     <span>{alreadyAdded ? '✓' : '+'}</span>
@@ -488,7 +488,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                               handleUpdateCampaignProduct(item.productId, 'eventPrice', e.target.value)
                             }
                             placeholder="Ex: 55.00"
-                            className="w-28 h-8 px-2.5 rounded-lg bg-[#0F172A] border border-slate-700 text-orange-400 font-bold outline-none"
+                            className="w-28 h-8 px-2.5 rounded-lg bg-[#0F172A] border border-slate-700 text-purple-400 font-bold outline-none"
                           />
                         </td>
                         <td className="px-3 py-2.5">
@@ -498,7 +498,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                             onChange={e =>
                               handleUpdateCampaignProduct(item.productId, 'customBadge', e.target.value)
                             }
-                            placeholder="Ex: 👻 Peça Assombrada"
+                            placeholder="Ex: ✨ Peça Especial"
                             className="w-full min-w-[180px] h-8 px-2.5 rounded-lg bg-[#0F172A] border border-slate-700 text-white outline-none"
                           />
                         </td>
@@ -526,7 +526,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                 type="checkbox"
                 checked={form.isActive}
                 onChange={e => setForm(prev => ({ ...prev, isActive: e.target.checked }))}
-                className="accent-[#F97316] w-4 h-4 cursor-pointer"
+                className="accent-[#7C3AED] w-4 h-4 cursor-pointer"
               />
               <span className="text-sm font-extrabold text-white">
                 Ativar na Loja Agora
@@ -547,7 +547,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
               <button
                 type="submit"
                 disabled={isSaving}
-                className="h-10 px-6 rounded-xl text-xs font-extrabold bg-[#F97316] hover:bg-orange-600 text-white shadow-lg cursor-pointer disabled:opacity-60"
+                className="h-10 px-6 rounded-xl text-xs font-extrabold bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-lg cursor-pointer disabled:opacity-60"
               >
                 {isSaving ? 'Salvando...' : '💾 Salvar Campanha'}
               </button>
@@ -623,7 +623,7 @@ export function SeasonalCampaignsManager({ products }: SeasonalCampaignsManagerP
                   className={`px-3.5 py-2 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
                     c.isActive
                       ? 'bg-emerald-950/50 border-emerald-700/50 text-emerald-300'
-                      : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-[#F97316]'
+                      : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-[#7C3AED]'
                   }`}
                 >
                   {c.isActive ? '⏸ Pausar Evento' : '▶ Ativar na Vitrine'}

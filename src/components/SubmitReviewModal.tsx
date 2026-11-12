@@ -90,12 +90,12 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
         className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-[#090D16] border border-slate-800 text-slate-100 shadow-2xl p-6 sm:p-7 flex flex-col custom-scrollbar animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
         style={{
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(234, 88, 12, 0.12)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(124, 58, 237, 0.15)'
         }}
       >
         {isSuccess ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-4 animate-in fade-in duration-300">
-            <div className="w-16 h-16 rounded-full bg-orange-600/20 border border-orange-500/40 flex items-center justify-center text-3xl shadow-lg shadow-orange-950/40">
+            <div className="w-16 h-16 rounded-full bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-3xl shadow-lg shadow-purple-950/40">
               ⭐
             </div>
             <h3 className="text-2xl font-extrabold text-white">
@@ -157,7 +157,7 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
                   );
                 })}
               </div>
-              <span className="text-[11px] font-bold text-orange-400/90">
+              <span className="text-[11px] font-bold text-purple-300">
                 {rating === 5 && 'Excepcional! Impecável (5/5)'}
                 {rating === 4 && 'Muito boa, gostei muito! (4/5)'}
                 {rating === 3 && 'Boa peça (3/5)'}
@@ -178,7 +178,7 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
                 maxLength={150}
-                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
               />
             </div>
 
@@ -190,11 +190,11 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
               <input
                 type="text"
                 required
-                placeholder="Ex: Charizard X 1:10, Booster Box Pokémon, STL Gengar..."
+                placeholder="Ex: Link Yarn Hero, Brasão Lobo Witcher, Baby Yoda Grogu..."
                 value={productName}
                 onChange={e => setProductName(e.target.value)}
                 maxLength={150}
-                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
               />
             </div>
 
@@ -209,7 +209,7 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
                 value={customerCity}
                 onChange={e => setCustomerCity(e.target.value)}
                 maxLength={100}
-                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
               />
             </div>
 
@@ -230,7 +230,7 @@ export function SubmitReviewModal({ open, onClose, onSuccess }: Props) {
                 placeholder="Conte o que achou dos detalhes, peso da peça, acabamento da pintura e cuidado no envio..."
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                className="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors resize-none leading-relaxed"
+                className="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors resize-none leading-relaxed"
               />
             </div>
 

@@ -285,11 +285,9 @@ export default function Home() {
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 w-full max-w-full pb-6 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {[
                   { id: 'ALL', label: 'Todos' },
-                  { id: 'FIGURE_POKEMON', label: 'Figures Pokémon' },
-                  { id: 'DIORAMA', label: 'Dioramas' },
-                  { id: 'CHIBI', label: 'Colecionáveis' },
-                  { id: 'ACCESSORY_3D', label: 'Geek 3D' },
-                  { id: 'TCG', label: 'Pokémon TCG' },
+                  { id: 'CHIBI', label: 'Chibis & Miniaturas' },
+                  { id: 'DIORAMA', label: 'Dioramas & Cenários' },
+                  { id: 'ACCESSORY_3D', label: 'Geek & Decoração 3D' },
                 ].map(tab => {
                   const active = activeCategory === tab.id;
                   return (

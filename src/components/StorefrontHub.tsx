@@ -29,17 +29,17 @@ export function StorefrontHub({
   const counts: Record<StorefrontTab, number> = {
     ALL: totalProductsCount,
     CAMPAIGN: campaignProductsCount,
-    ANIME_MANGA: products.filter(p => getUniverse(p) === 'ANIME_MANGA').length,
-    POKEMON_TCG: products.filter(p => getUniverse(p) === 'POKEMON_TCG' || (!p.universe && p.department === 'TCG')).length,
     POP_CULTURE_GEEK: products.filter(p => getUniverse(p) === 'POP_CULTURE_GEEK').length,
+    ANIME_MANGA: products.filter(p => getUniverse(p) === 'ANIME_MANGA').length,
     DIORAMA_ACCESSORY: products.filter(p => getUniverse(p) === 'DIORAMA_ACCESSORY').length,
+    POKEMON_TCG: 0,
   };
 
   const preset = activeCampaign?.themePreset
     ? THEME_PRESET_CONFIGS[activeCampaign.themePreset] || THEME_PRESET_CONFIGS.CUSTOM
     : null;
-  const accent = activeCampaign?.accentColor || preset?.accentColor || '#F97316';
-  const secondary = activeCampaign?.secondaryColor || preset?.secondaryColor || '#7C3AED';
+  const accent = activeCampaign?.accentColor || preset?.accentColor || '#7C3AED';
+  const secondary = activeCampaign?.secondaryColor || preset?.secondaryColor || '#38BDF8';
   const campaignIcon = preset?.emoji || '✨';
 
   const baseTabs: Array<{
@@ -68,22 +68,16 @@ export function StorefrontHub({
       description: 'Explore todo o acervo exclusivo de impressão 3D da ImagineLab',
     },
     {
-      id: 'ANIME_MANGA',
-      label: 'Animes & Mangás',
-      icon: '⚔️',
-      description: UNIVERSE_CONFIG.ANIME_MANGA.description,
-    },
-    {
-      id: 'POKEMON_TCG',
-      label: 'Pokémon',
-      icon: '⚡',
-      description: UNIVERSE_CONFIG.POKEMON_TCG.description,
-    },
-    {
       id: 'POP_CULTURE_GEEK',
       label: 'Pop Culture & Games',
       icon: '🎮',
       description: UNIVERSE_CONFIG.POP_CULTURE_GEEK.description,
+    },
+    {
+      id: 'ANIME_MANGA',
+      label: 'Animes & Mangás',
+      icon: '⚔️',
+      description: UNIVERSE_CONFIG.ANIME_MANGA.description,
     },
     {
       id: 'DIORAMA_ACCESSORY',
@@ -214,7 +208,7 @@ export function StorefrontHub({
           <p className="flex items-start sm:items-center gap-2 text-slate-300 break-words leading-relaxed text-[11px] sm:text-xs">
             <span
               className="font-bold shrink-0"
-              style={{ color: activeTab === 'CAMPAIGN' ? accent : '#EA580C' }}
+              style={{ color: activeTab === 'CAMPAIGN' ? accent : '#7C3AED' }}
             >
               ✦
             </span>

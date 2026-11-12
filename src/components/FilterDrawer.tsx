@@ -57,7 +57,7 @@ export function FilterDrawer({ filters, onChange, onClose, open, masterTab = 'AL
                     onClick={() => onChange({ ...filters, categories: toggleIn(filters.categories, c) })}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                       active
-                        ? 'bg-orange-500/10 border-orange-500 text-orange-500'
+                        ? 'bg-purple-500/10 border-purple-500 text-purple-400'
                         : 'bg-[#1F2937] border-gray-700 text-gray-300 hover:border-gray-500'
                     }`}
                   >
@@ -82,7 +82,7 @@ export function FilterDrawer({ filters, onChange, onClose, open, masterTab = 'AL
                       onClick={() => onChange({ ...filters, types: toggleIn(filters.types, t) })}
                       className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all border"
                       style={active
-                        ? { background: col?.bg || 'rgba(249,115,22,0.15)', color: col?.text || '#F97316', borderColor: col?.text || '#F97316' }
+                        ? { background: col?.bg || 'rgba(124,58,237,0.15)', color: col?.text || '#7C3AED', borderColor: col?.text || '#7C3AED' }
                         : { background: '#1F2937', color: '#9CA3AF', borderColor: '#374151' }
                       }
                     >
@@ -131,7 +131,7 @@ export function FilterDrawer({ filters, onChange, onClose, open, masterTab = 'AL
           )}
           <button
             onClick={onClose}
-            className="flex-[2] py-3 rounded-lg font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+            className="flex-[2] py-3 rounded-lg font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] transition-colors cursor-pointer"
           >
             Ver Resultados
           </button>
